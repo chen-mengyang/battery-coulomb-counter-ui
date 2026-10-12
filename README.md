@@ -54,10 +54,19 @@ lv_color_t c = lv_color_hsv_to_rgb(soc * 12 / 10, 78, 86);
 
 ```
 .
-├── ui.h                  # 对外接口（ui_data_t 结构 + ui_init/ui_update）
+├── ui.h                  # LVGL版对外接口（ui_data_t + ui_init/ui_update）
 ├── ui_lvgl.c             # LVGL v8 实现
-├── render_verify.py      # 逐像素复刻绘图逻辑 → 渲染 PNG 做离线验证
-├── images/               # 各状态渲染图（README 引用）
+├── ui_raw_v2.h/.c        # 裸机V2：颜色/钳位/初始化（零LVGL依赖，G431直用）
+├── ui_raw_draw.c         # 裸机V2：全屏重画（布局与LVGL 1:1）
+├── gfx_raw.h/.c          # 裸机2D原语：圆角矩形/描边/1-bit文字直刷
+├── font_raw.h            # 1-bit点阵子集（fontgen.py生成，~4KB Flash）
+├── fontgen.py            # 字库生成器（Noto CJK 12px + DejaVu 16/40px）
+├── st7789_port.c         # G431 SPI+DMA移植模板（改引脚即用）
+├── render_verify.py      # LVGL绘图逻辑复刻 → PNG验证
+├── raw_canvas.py         # 裸机V2渲染核心（复刻gfx_raw.c）
+├── raw_draw.py           # 裸机V2整屏渲染（复刻ui_raw_draw.c）
+├── render_raw_main.py    # 输出裸机预览 + LVGL并排对比
+├── images/               # 各状态渲染图 + 对比图（README引用）
 └── README.md
 ```
 
@@ -82,6 +91,33 @@ lv_font_conv --font SourceHanSansCN-Regular.ttf \
 ```
 
 `ui_lvgl.c` 里用到了 `lv_snprintf`，需保证 `LV_USE_LABEL 1`（默认开）。
+
+## 裸机 V2（G431 直用，与 LVGL 同界面）
+
+<p align="center">
+  <img src="images/compare_76.png" width="400" alt="左LVGL右裸机 76%">
+  <br>
+  <sub>左=LVGL复刻 ｜ 右=裸机V2复刻（差异~7%，仅抗锯齿/字形）</sub>
+</p>
+
+零 LVGL 依赖，`RAM ~0（无帧缓冲）`，`Flash ~14KB（含4KB字库）`，`G431K8(64KB/32KB)` 随便装：
+
+```c
+ui_raw_data_t d = {0};
+d.soc = 76.0f; d.voltage = 84.52f; d.current = -12.3f;
+d.power_kw = 1.04f; d.capacity_ah = 19.6f; d.range_km = 50; d.charging = 0;
+
+ui_raw_init();              /* 上电一次，需先 ST7789_Init() */
+while (1) {
+    /* 每500ms置 refresh 式调用：直接 ui_raw_update(&d) 全屏重画 */
+    ui_raw_update(&d);
+    HAL_Delay(500);
+}
+```
+
+移植只改 `st7789_port.c` 引脚+`SPI`句柄，实现 `SetWindow/PushPixels/PushPixelsSolid` 即可。
+字库再生：`python3 fontgen.py`（需 `NotoSansCJK + DejaVu`，`Ubuntu` 自带）。
+对比验证：`python3 render_raw_main.py` → `images/compare_*.png`（左LVGL右裸机+diff率）。
 
 ## 渲染验证（render_verify.py）
 
