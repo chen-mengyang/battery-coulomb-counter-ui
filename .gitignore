@@ -1,0 +1,23 @@
+# 编译产物
+*.o
+*.d
+*.elf
+*.bin
+*.hex
+*.map
+
+# CubeIDE / Keil 工程
+Debug/
+Release/
+*.ioc
+*.uvprojx
+*.uvoptx
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+
+# 系统文件
+.DS_Store
+Thumbs.db
