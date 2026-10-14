@@ -5,6 +5,7 @@ from PIL import Image
 from raw_draw import render_raw
 
 OUT = os.path.dirname(os.path.abspath(__file__))
+IMG = os.path.join(OUT, "..", "images")
 W = H = 240
 
 if __name__ == "__main__":
@@ -28,12 +29,12 @@ if __name__ == "__main__":
     ]
     for tag, kw in cases:
         raw = render_raw(**kw)
-        raw.save(os.path.join(OUT, "preview_raw_%s.png" % tag))
+        raw.save(os.path.join(IMG, "preview_raw_%s.png" % tag))
         print("生成 preview_raw_%s.png" % tag)
         lvim = render_lvgl(**kw).convert("RGB")
         combo = Image.new("RGB", (W * 2 + 8, H), (40, 40, 40))
         combo.paste(lvim, (0, 0)); combo.paste(raw, (W + 8, 0))
-        combo.save(os.path.join(OUT, "compare_%s.png" % tag))
+        combo.save(os.path.join(IMG, "compare_%s.png" % tag))
         a, b = lvim.load(), raw.load()
         d = sum(1 for y in range(H) for x in range(W) if a[x, y] != b[x, y])
         print("  compare_%s diff %d/57600 (%.1f%%)" % (tag, d, d / 576.0))

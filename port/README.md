@@ -1,7 +1,7 @@
 # G431 移植层（STM32G431C8T6 + ST7789 240×280）
 
-反向合并：本仓库**裸机 UI 为主体**，`g431_port/` 只放与 CubeIDE 工程
-`stm32g431c8t6_prj` 对接的转接代码。不含 LVGL。
+反向合并：本仓库**裸机 UI 为主体**，`port/`（原 `g431_port/`）只放与 CubeIDE 工程
+`battery-coulomb-counter-ui` 对接的转接代码。不含 LVGL。
 
 ## 硬件（本地板）
 
@@ -21,20 +21,20 @@
   拷入 CubeIDE 工程即用）；`ST7789_Init` 复用工程 `st7789_init()`
 - `g431_main_demo.c` — main.c USER CODE 粘贴参考
 
-## 拷入 CubeIDE 工程
-
-把以下文件拷入 `stm32g431c8t6_prj/Core/Src|Inc`：
+## 文件在工程中的位置（已就位）
 
 ```
-g431_port/g431_port.h      -> Core/Inc/
-g431_port/g431_st7789.c    -> Core/Src/
-ui_raw_v2.h                -> Core/Inc/
-ui_raw_v2.c                -> Core/Src/
-ui_raw_draw.c              -> Core/Src/
-gfx_raw.h                  -> Core/Inc/
-gfx_raw.c                  -> Core/Src/
-font_raw.h                 -> Core/Inc/
+port/g431_port.h      -> port/    （-I ../port）
+port/g431_st7789.c    -> port/    （.cproject sourcePath=port）
+ui_raw_v2.h/.c        -> ui/      （-I ../ui）
+ui_raw_draw.c         -> ui/
+gfx_raw.h/.c          -> ui/
+font_raw.h            -> ui/
+st7789.c/h            -> ui/
 ```
+
+`.cproject` 已加 `ui`/`port` 源码路径与 include 路径；`port/st7789_port.c`
+（通用模板）和 `ui/ui_lvgl.c`（需 LVGL）在 sourceEntries 中排除，不参与编译。
 
 `main.c` 按 `g431_main_demo.c` 改三处 USER CODE 即可。
 

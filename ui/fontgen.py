@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """fontgen.py - 从系统字体提取 1-bit 点阵子集，生成 font_raw.h
 
-用法: python3 fontgen.py   # 在仓库根目录运行，生成 font_raw.h
+用法: python3 ui/fontgen.py   # 生成同目录下的 ui/font_raw.h
 字体: NotoSansCJK(中文12px) + DejaVuSans(数字16/40px)
 字符: 与 ui_lvgl.c / README 完全一致的子集
 """

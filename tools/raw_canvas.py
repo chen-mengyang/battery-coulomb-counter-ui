@@ -26,7 +26,7 @@ def load_font_raw(path):
         fonts[name.lower()] = g
     return blob, fonts
 
-BLOB, FONTS = load_font_raw(os.path.join(OUT, "font_raw.h"))
+BLOB, FONTS = load_font_raw(os.path.join(OUT, "..", "ui", "font_raw.h"))
 
 def soc_rgb(soc):
     import sys

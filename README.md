@@ -54,19 +54,28 @@ lv_color_t c = lv_color_hsv_to_rgb(soc * 12 / 10, 78, 86);
 
 ```
 .
-├── ui.h                  # LVGL版对外接口（ui_data_t + ui_init/ui_update）
-├── ui_lvgl.c             # LVGL v8 实现
-├── ui_raw_v2.h/.c        # 裸机V2：颜色/钳位/初始化（零LVGL依赖，G431直用）
-├── ui_raw_draw.c         # 裸机V2：全屏重画（布局与LVGL 1:1）
-├── gfx_raw.h/.c          # 裸机2D原语：圆角矩形/描边/1-bit文字直刷
-├── font_raw.h            # 1-bit点阵子集（fontgen.py生成，~4KB Flash）
-├── fontgen.py            # 字库生成器（Noto CJK 12px + DejaVu 16/40px）
-├── st7789_port.c         # G431 SPI+DMA移植模板（改引脚即用）
-├── render_verify.py      # LVGL绘图逻辑复刻 → PNG验证
-├── raw_canvas.py         # 裸机V2渲染核心（复刻gfx_raw.c）
-├── raw_draw.py           # 裸机V2整屏渲染（复刻ui_raw_draw.c）
-├── render_raw_main.py    # 输出裸机预览 + LVGL并排对比
+├── Core/                 # CubeMX 生成的 HAL + main.c（USER CODE 里接线 UI）
+├── ui/                   # 显示层（编译进固件）
+│   ├── ui_raw_v2.h/.c        # 裸机V2：颜色/钳位/初始化（零LVGL依赖，G431直用）
+│   ├── ui_raw_draw.c         # 裸机V2：全屏重画（布局与LVGL 1:1）
+│   ├── gfx_raw.h/.c          # 裸机2D原语：圆角矩形/描边/1-bit文字直刷
+│   ├── font_raw.h            # 1-bit点阵子集（fontgen.py生成，~4KB Flash）
+│   ├── fontgen.py            # 字库生成器（Noto CJK 12px + DejaVu 16/40px）
+│   ├── st7789.c/h            # ST7789驱动（SPI3 42.5MHz + DMA 16行块缓冲）
+│   ├── ui.h + ui_lvgl.c      # LVGL版接口/实现（存档，.cproject 里排除编译）
+├── port/                 # G431 板级移植层
+│   ├── g431_port.h           # 屏尺寸宏（240×280，UI 顶部对齐 0..239）+ 转接声明
+│   ├── g431_st7789.c         # ST7789_SetWindow/PushPixels 转接（编译进固件）
+│   ├── g431_main_demo.c      # main.c USER CODE 粘贴参考（纯注释）
+│   ├── st7789_port.c         # 通用 SPI+DMA 移植模板（存档，排除编译）
+│   └── README.md             # 接线表 + 分辨率说明
+├── tools/                # PC 端渲染/验证脚本
+│   ├── raw_canvas.py         # 裸机V2渲染核心（复刻gfx_raw.c）
+│   ├── raw_draw.py           # 裸机V2整屏渲染（复刻ui_raw_draw.c）
+│   ├── render_raw_main.py    # 输出裸机预览 + LVGL并排对比
+│   └── render_verify.py      # LVGL绘图逻辑复刻 → PNG验证
 ├── images/               # 各状态渲染图 + 对比图（README引用）
+├── doc/                  # 屏幕/芯片手册 + ST7789_LCD_Guide.md
 └── README.md
 ```
 
@@ -116,8 +125,8 @@ while (1) {
 ```
 
 移植只改 `st7789_port.c` 引脚+`SPI`句柄，实现 `SetWindow/PushPixels/PushPixelsSolid` 即可。
-字库再生：`python3 fontgen.py`（需 `NotoSansCJK + DejaVu`，`Ubuntu` 自带）。
-对比验证：`python3 render_raw_main.py` → `images/compare_*.png`（左LVGL右裸机+diff率）。
+字库再生：`python3 ui/fontgen.py`（需 `NotoSansCJK + DejaVu`，`Ubuntu` 自带）。
+对比验证：`python3 tools/render_raw_main.py` → `images/compare_*.png`（左LVGL右裸机+diff率）。
 
 ## 渲染验证（render_verify.py）
 
@@ -126,7 +135,7 @@ while (1) {
 同时打印布局体检报告（越界/裁剪/溢出）。
 
 ```bash
-python render_verify.py
+python tools/render_verify.py
 python <lvgl_image_viewer.py 路径> . -o ./png_out/ --overwrite
 ```
 
