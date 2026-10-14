@@ -16,10 +16,13 @@
  *   st7789_init();                      // SWRESET 初始化 + 黑屏
  *   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);  // LED 常亮
  *   ui_raw_init();                      // 清 240x240 背景
- *   // 底部 40 行留白清成背景色
- *   GFX_FillRect(0, 240, 240, 40, GFX_RGB565(0x0B,0x0E,0x13));
+ *   // 底部 40 行是状态带（帧耗时/FPS），整屏清一次背景即可
+ *   GFX_FillRect(0, 0, 240, 280, GFX_RGB565(0x0B,0x0E,0x13));
  *
  * ---- USER CODE BEGIN 3 (while 1) ----
+ *   // 25Hz 全屏刷新：40ms 节拍 + 屏底帧耗时/FPS 统计（DWT 计时、
+ *   // tick 对齐、ui_raw_draw_stats）完整实现直接抄本仓
+ *   // Core/Src/main.c 的 USER CODE 3。最简版本：
  *   {
  *     static int t = 0;
  *     ui_raw_data_t d = { 0 };
@@ -27,8 +30,7 @@
  *     d.current = -12.3f; d.power_kw = 0.89f;
  *     d.capacity_ah = -1.0f; d.range_km = 50; d.charging = (t / 20) % 2;
  *     ui_raw_update(&d);
- *     // 底部留白保持背景（ui 只画 0..239）
  *     t++;
- *     HAL_Delay(500);
+ *     HAL_Delay(40);   // 25Hz；正式应用请按 HAL_GetTick 对齐节拍
  *   }
  */
