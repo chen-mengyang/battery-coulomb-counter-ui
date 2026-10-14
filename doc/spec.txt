@@ -1,0 +1,1448 @@
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+
+TFT LCD MODULE
+1.69 inch 240RGB*280DOTS
+MODULE NUMBER:
+REVISION:
+
+ZJY169T-IG01
+
+A
+
+Customer:
+Approved by
+
+From: Zhongjingyuan
+
+Technology Inc.
+
+Approved by
+
+Notes:
+Technology Inc. before assigning your product based on this module
+1. Please contact ZHONGJINGYUAN
+specification
+2. The information contained herein is presented merely to indicate the characteristics and performance of
+our products. No responsibility is assumed by Limito Technology Inc. for any intellectual property claims
+or other problems that may result from application based on the module described herein.
+
+Page 1
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+Revised History
+Part Number
+
+Revision
+
+ZJY169T-IG01
+
+A
+
+Revision Content
+New
+
+Revised on
+2020-10-07
+
+Page 2
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+
+Contents
+Revision History
+Contents
+1. General Description
+2. Mechanical Drawing
+3. Pin Description
+4. Electrical Characteristics
+5. Optical Characteristics
+6. Reliability
+7. Package Specifications
+8. Incoming Inspection standards
+9. Precautions When Using These TFT Display Modules
+10. Warranty
+11. Notice
+
+Page 3
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+1. General Description
+1.1 Description
+LH169T-IG01 is a 240RGBX280 dot-matrix TFT LCD module. This module is composed of a TFT LCD
+Panel, driver ICs, FPC and a Backlight unit.
+1.2 Features
+
+NO.
+
+Item
+
+Contents
+
+Unit
+
+1
+
+LCD Size
+
+1.69
+
+inch
+
+2
+
+Display Mode
+
+Normally black
+
+-
+
+3
+
+Resolution
+
+240(H)RGB x280(V)
+
+pixels
+
+4
+
+Pixel pitch
+
+0.11655(H) x 0.11655(V)
+
+mm
+
+5
+
+Active area
+
+27.972(H) x 32.634(V)
+
+mm
+
+6
+
+Module size
+
+30.07(H) x 37.43(V) x1.56 (D)
+
+mm
+
+7
+
+Pixel arrangement
+
+RGB Vertical stripe
+
+-
+
+8
+
+Interface
+
+4 Line SPI
+
+-
+
+9
+
+Display Colors
+
+262K
+
+colors
+
+10
+
+Drive IC
+
+ST7789V2
+
+-
+
+11
+
+Luminance(cd/m2)
+
+480 (TYP)
+
+Cd/m2
+
+12
+
+Viewing Direction
+
+All View
+
+Best image
+
+13
+
+Backlight
+
+3 White LED Parallel
+
+-
+
+14
+
+Operating Temp.
+
+-20℃~ + 70℃
+
+℃
+
+15
+
+Storage Temp.
+
+-30℃~+ 80℃
+
+℃
+
+16
+
+Weight
+
+3.4
+
+g
+
+Page 4
+
+1.00
+
+34.33±0.2(POL)
+
+32.63 (A.A)
+
+银浆点
+
+Ag
+
+1
+
+单面弯折区域
+
+IC-ST7789V2
+
+FREE
+
+A K
+
+93
+
+240*RGB*280
+
+1.69"
+
+27.97 (A. A)
+
+29.37±0.2(POL)
+
+29.77±0.1 (LCD)
+
+30.07±0.1 (LCM)
+
+Ag
+
+银浆点
+
+1.05
+
+mm
+Tolerance
+Dimension ±0.2
+Angle
+±1
+
+General Roughness
+
+Unit
+
+Unless Otherwise Specified
+
+Vf=2.8~3.2V
+
+Date
+
+By
+
+Title
+
+A
+
+FPC弯折示意图
+FPC展开出货
+
+FPC弯折突出背光胶框
+请注意机壳避空
+
+K
+
+白色胶铁一体
+
+Date
+20200826
+
+Drawn
+Letter
+20200826
+
+E.E.
+
+Panel / E.
+
+ZJY169T-IG01
+
+zhongjingyuan technology Inc.
+
+0.8 Max
+
+Customer Approval
+Signature
+
+If=60mA
+
+10.00
+
+白色胶铁一体
+
+Item
+A
+
+P.M.
+
+Rev.
+A
+
+Scale
+1:1
+
+Sheet
+1 of 1
+
+Size
+A3
+
+Soda Lime / Polyimide
+
+Material
+
+1.69'' TFT
+
+Drawing Number
+
+4线SPI
+
+Remark
+Original Drawing
+
+中景园电子技术有限公司
+
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+
+2. Mechanical Drawing
+
+37.13 ± 0.1(LCD)
+
+34.83 (CF OD)
+
+37.43 ± 0.1(LCM)
+
+Page 5
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+3. Pin Definition
+FPC Connector is used for the module electronics interface.
+NO.
+
+Symbol
+
+Description
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+GND
+LEDK
+LEDA
+VDD
+GND
+GND
+D/C
+CS
+SCL
+
+10
+
+SDA
+
+11
+
+RESET
+
+12
+
+GND
+
+Power Ground
+LED Cathode
+LED Anode
+Power Supply for Analog
+Power Ground
+Power Ground
+Display data/command selection pin.
+Chip selection pin ;Low enable ,high disable.
+This pin is used to be serial interface clock
+SPI interface input/output pin .the data is latched on the rising
+edge of the SCL signal.
+This signal will reset the device and it must be applied to
+properly initialize the chip .Signal is active low.
+Power Ground
+
+Note:
+
+Page 6
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+4. Electrical Characteristics
+4.1 Absolute Maximum Ratings
+Parameter
+
+Symbol
+
+Min
+
+MAX
+
+Unit
+
+Supply Voltage (I/O)
+
+VDD
+
+-0.3
+
+4.6
+
+V
+
+Analog Supply Voltage
+
+VDDIO
+
+-0.3
+
+4.6
+
+V
+
+Logic Input Voltage
+
+VIN
+
+-0.3
+
+VDDIO+0.5
+
+V
+
+Operation Temperature
+
+Top
+
+-20
+
+70
+
+℃
+
+Storage Temperature
+
+Tst
+
+-30
+
+80
+
+℃
+
+Notes
+
+4.2 Operating Conditions
+Parameter
+
+Symbol
+
+Min
+
+TYP
+
+MAX
+
+Unit
+
+Notes
+
+System Voltage
+
+VDD
+
+2.5
+
+2.8
+
+3.3
+
+V
+
+Gate Driver High Voltage
+
+VGH
+
+12.2
+
+-
+
+14.97
+
+V
+
+Gate Driver Low Voltage
+
+VGL
+
+-12.5
+
+-
+
+-7.16
+
+V
+
+Operating Current for VDD
+
+IDD
+
+-
+
+8
+
+10
+
+mA
+
+Sleep_In Mode VDD
+
+I dd
+
+-
+
+15
+
+30
+
+uA
+
+Sleep_In Mode VDDIO
+
+I ddio
+
+-
+
+5
+
+10
+
+uA
+
+Parameter
+
+Symbol
+
+Min
+
+TYP
+
+MAX
+
+Unit
+
+Voltage for LED backlight
+
+VLED
+
+2.8
+
+3.0
+
+3.2
+
+V
+
+Current for LED backlight
+
+ILED
+
+-
+
+60
+
+90
+
+mA
+
+3 LED
+
+Power Consumption
+
+Pbl
+
+-
+
+180
+
+288
+
+mW
+
+1
+
+Brightness
+
+Lbr
+
+420
+
+480
+
+-
+
+cd/m2
+
+2
+
+LED Life time
+
+-
+
+20000
+
+-
+
+-
+
+hr
+
+3
+
+4.3 Backlight Unit
+Notes
+
+Note:
+1. Where ILED =60mA , VLED=3.0V , Pbl= ILED x VLED
+2. Uniform measure condition:
+a:Measure 9 point ,Measure location is show below:
+b:Uniform=(Min brightness/Max brightness)x100%
+c:Best Contrast.
+2W/3
+
+2H/3
+
+Active area(H)
+
+H/3
+
+W/3
+
+Active area(W)
+
+3. The environmental conducted under ambient air flow ,at Ta=25±2oC,60%RH±5%
+
+Page 7
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+4.4 Backlight Recommended Circuit
+Motherboard driver backlight is need constant current circuit , if threated voltage screen after light
+brightness difference . Current and power consumption of the machine are inconsistent , so recommend a
+backlight driving circuit is best rated current . It is recommended to use IC (AW9364) . The reference circuit
+is as follows:
+
+4.5 AC Timing Characteristic of The LCD
+Serial interface Characteristics(4-line serial):
+
+Page 8
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+5. OPTICAL CHARACTERISTICS
+Item
+
+Symbol
+
+
+Viewing Angle
+
+
+Measuring
+Conditions
+
+Min.
+
+Typ.
+
+Max.
+
+ = 0o
+
+25 oC
+
+70
+
+80
+
+-
+
+ =180o
+
+25 oC
+
+70
+
+80
+
+-
+
+o
+
+ = 90
+
+25 oC
+
+70
+
+80
+
+-
+
+ =270o
+
+25 oC
+
+70
+
+80
+
+-
+
+Unit
+
+Remark
+
+Deg
+
+Note1
+
+Brightness
+Luminance
+Uniformity
+Contrast Ratio
+
+Lbr
+
+--
+
+-
+
+420
+
+480
+
+-
+
+∆L
+
+--
+
+-
+
+70
+
+75
+
+-
+
+CR
+
+--
+
+25 oC
+
+800
+
+1000
+
+-
+
+--
+
+Note2
+
+Response
+Time
+
+Tr+Tf
+
+ = 0o
+ = 0o
+
+25
+o
+C
+o
+25 C
+
+-
+
+35
+
+40
+
+ms
+
+Note3
+
++0.03
+
+--
+
+BM-7A
+
+-
+
+%
+
+--
+
+White
+Color of
+CIE
+Coordinate
+
+Red
+Green
+Blue
+
+Transmittance
+(with polarizer)
+
+--
+
+X
+Y
+X
+Y
+
+0.345
+
+o
+
+25 C
+25 oC
+25 oC
+
+0.369
+0.605
+
+25 C
+
+Y
+
+25 oC
+
+X
+
+o
+
+Y
+
+25 C
+25 oC
+
+--
+
+--
+
+0.353
+
+-0.03
+
+o
+
+X
+
+Cd/m2
+
+0.372
+0.588
+0.163
+0.116
+
+4.5
+
+5.0
+
+ΘU
+
+Note 1 Definition of Viewing Angle:
+
+12’
+o’cloc
+
+ΘL
+
+ΘR
+
+Φ180o
+
+Φ=0o
+ΘD
+
+Note 2:Definition of Contrast Ratio (CR) :
+measured at the center point of panel
+
+6’ o’clock
+Φ=270o
+
+Luminance with all pixels white
+CR =
+Luminance with all pixels black
+
+Page 9
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+Note 3: Definition of Response Time : Sum of Tr and Tf :
+
+6. Reliability
+Contents of Reliability Tests
+No.
+
+Item
+
+1
+
+High Temperature Operation
+
+70C±2C, 120 hrs
+
+2
+
+Low Temperature Operation
+
+-20C±2C, 120 hrs
+
+3
+
+High Temperature Storage
+
+80C±2C, 120 hrs
+
+4
+
+-30C±2C, 120 hrs
+
+5
+
+Low Temperature Storage
+High Temperature
+/Humidity Operation
+
+6
+
+Temperature Cycling
+
+7
+
+Vibration Test
+
+8
+
+ESD Test
+
+9
+
+Conditions
+
+Note
+
+60C±2C, 90% RH, 120 hrs
+-10°C→25°C→60°C→25°C→-10°C
+30min 5min 30min 5min 30min
+10 cycle.
+Total fixed amplitude:1.5mm.
+Vibration Frequerncy:10~55Hz
+One cycle 60 seconds to 3 direction of X,Y,Z each
+15 minutes.
+Air Discharge:Apple ±4KV with 5 times.
+Contact Discharge:Apple ±2KV with 5 times.
+
+Drop Test
+
+Note:
+No charge on display and in operation under the following test condition.
+Please note that the reliability test project requires the use of virgin samples
+Condition : Unless otherwise specified ,tests will be conducted under the following condition.
+Temperature:20C±5C.
+Humidity:65±5%RH.
+Tests will be not conducted under functioning state.
+
+Page 10
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+7. Package Specifications
+Item
+
+Quantity
+
+Module
+
+720
+
+per Primary Box
+
+Holding Trays
+
+(A)
+
+15
+
+per Primary Box
+
+Total Trays
+
+(B)
+
+16
+
+per Primary Box (Including 1 Empty Tray)
+
+Primary Box
+
+(C)
+
+1~4
+
+per Carton (4 as Major / Maximum)
+
+Page 11
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+
+8. Incoming Inspection Standards
+8.1. Inspection and Environment Conditions
+8.1.1. Inspection Conditions:
+(1) Inspection Distance :35 cm±5cm
+(2) View Angle : Light-on Inspection Angle: ±5°
+Cosmetic Inspection Angle: ±45°
+
+(perpendicular to LCD panel surface)
+8.1.2 Environment Conditions:
+Ambient Temperature
+
+23℃±
+±5℃
+
+Ambient Humidity
+
+55±
+±10％RH
+
+Ambient Illumination
+
+Cosmetic Inspection
+
+More than 600 Lux
+
+Functional Inspection
+
+300~500 Lux
+
+8.1.3 Sampling Conditions:
+（1） Lot Size:Quantity of shipment lot per model
+（2） Sampling Method:
+MIL-STD-105E
+Sampling Plan
+
+Normal Inspection，Single Sampling
+Level II
+
+AQL
+
+Major Defect
+
+0.65%
+
+Minor Defect
+
+1.5%
+
+Page 12
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+8.1.4 Inspection Criteria
+8.1.4.1 Cosmetic Inspection(Panel):
+Check Item
+
+Classification
+
+Criteria(Unit: mm)
+
+Black / White spot
+Foreign material
+(Round type)
+Pinholes Stain
+
+Minor
+
+Particles inside cell.
+
+Distance between 2 defects should more than 5mm apart.
+
+Black and White line
+Scratch
+Foreign material
+
+Minor
+
+(Line type)
+
+Distance between 2 defects should more than 5mm apart.
+Scratches not viewable through the back of the display are
+acceptable.
+
+Glass Crack
+
+Minor
+LCD with extensible crack line is unacceptable(When press the
+cracked LCD Area, the line will expand,we define it is extensible
+crack line)
+
+Glass Chipping Pad
+Area
+Minor
+
+Page 13
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+
+Check Item
+
+Classification
+
+Criteria(Unit: mm)
+
+Glass Chipping Rear
+Of Pad Area
+Minor
+
+Glass Chipping
+Except Pad Area
+Minor
+
+Glass Corner Chipping
+Minor
+
+Glass Burr
+Glass burr don’t affect assemble and module dimension.
+Minor
+
+FPC Defect
+1.Dent , pinhole width a＜W/2.
+Minor
+
+( W:circuitry width)
+2.Open circuit is unacceptable.
+3.No oxidation, contamination and distortion.
+
+Bubble on Polarizer
+
+Minor
+
+Page 14
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+
+Check Item
+
+Dent on Polarizer
+
+Classification
+
+Criteria(Unit: mm)
+
+Minor
+
+Screen deformation
+
+Bezel
+
+/
+
+Test for insertion of plug gauge at highest warping point:
+H≤0.25mm
+The client has special requirements, according to drawing.
+
+/
+
+1.No rust, distortion on the Bezel.
+2.No visible fingerprints, stains or other contamination.
+D:Diameter W: width L: length
+1.Spot: D≤0.2 is acceptable
+0.2＜D≤0.3, acceptable Inspection and Environment
+Conditions
+2dots are acceptable and the distance between defects
+Should more than 5mm.
+
+Touch Panel
+
+/
+
+D＞0.3 is unacceptable
+2.Dent: D＞0.3 is unacceptable.
+3.Scratch: W≤0.03,L≤10 is acceptable,
+0.03＜W≤0.1, L≤10, acceptable Inspection and
+Environment Conditions
+Distance between 2 defects should more than 5 mm.
+W＞0.1 is unacceptable.
+1.No distortion or contamination on PCB terminals.
+
+PCB
+
+/
+
+2.All components on PCB must same as documented on the
+BOM/component layout.
+3.Follow IPC-A-600F.
+
+Soldering
+
+/
+
+Follow IPC-A-610C standard.
+
+Leak
+
+/
+
+Yellow light, OK。White light, According to the limit sample
+
+Page 15
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+
+Check Item
+
+Classification
+
+Criteria(Unit: mm)
+The below defects must be rejected.
+1. Missing vertical / horizontal segment.
+2. Abnormal Display.
+3. No function or no display.
+4. Current exceeds product specifications.
+
+Electrical Defect
+
+Major
+
+5. LCD viewing angle defect.
+6. No Backlight.
+7. Dark Backlight.
+8. Touch Panel no function.
+9. Dark Dot –one Allowed.
+10. Bright Dot- one Allowed.
+
+9.
+
+Precautions When Using These TFT Display Modules
+9.1 Handling Precautions
+1)
+2)
+3)
+4)
+5)
+
+6)
+
+7)
+8)
+9)
+
+Since the display panel is being made of glass, do not apply mechanical impacts such us dropping
+from a high position.
+If the display panel is broken by some accident and the internal organic substance leaks out, be
+careful not to inhale nor lick the organic substance.
+If pressure is applied to the display surface or its neighborhood of the TFT display module, the cell
+structure may be damaged and be careful not to apply pressure to these sections.
+The polarizer covering the surface of the TFT display module is soft and easily scratched. Please
+be careful when handling the TFT display module.
+When the surface of the polarizer of the TFT display module has soil, clean the surface. It takes
+advantage of by using following adhesion tape.
+* Scotch Mending Tape No. 810 or an equivalent
+Never try to breathe upon the soiled surface nor wipe the surface using cloth containing solvent
+such as ethyl alcohol, since the surface of the polarizer will become cloudy.
+Also, pay attention that the following liquid and solvent may spoil the polarizer:
+* Water
+* Ketone
+* Aromatic Solvents
+Hold TFT display module very carefully when placing TFT display module into the system housing.
+Do not apply excessive stress or pressure to TFT display module. And, do not over bend the film
+with electrode pattern layouts. These stresses will influence the display performance. Also,
+secure sufficient rigidity for the outer cases.
+
+Do not apply stress to the driver IC and the surrounding molded sections.
+Do not disassemble nor modify the TFT display module.
+Do not apply input signals while the logic power is off.
+
+Page 16
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+10) Pay sufficient attention to the working environments when handing TFT display modules to
+prevent occurrence of element breakage accidents by static electricity.
+* Be sure to make human body grounding when handling TFT display modules.
+* Be sure to ground tools to use or assembly such as soldering irons.
+* To suppress generation of static electricity, avoid carrying out assembly work under dry
+environments.
+* Protective film is being applied to the surface of the display panel of the TFT display module.
+Be careful since static electricity may be generated when exfoliating the protective film.
+11) Protection film is being applied to the surface of the display panel and removes the protection film
+before assembling it. At this time, if the TFT display module has been stored for a long period of
+time, residue adhesive material of the protection film may remain on the surface of the display
+panel after removed of the film. In such case, remove the residue material by the method
+introduced in the above Section 5).
+12) If electric current is applied when the TFT display module is being dewed or when it is placed
+under high humidity environments, the electrodes may be corroded and be careful to avoid the
+above.
+9.2 Storage Precautions
+1)
+
+When storing TFT display modules, put them in static electricity preventive bags avoiding
+exposure to direct sun light nor to lights of fluorescent lamps. and, also, avoiding high temperature
+and high humidity environment or low temperature (less than 0C) environments. (We
+recommend you to store these modules in the packaged state when they were shipped from
+Limito technology Inc.)
+At that time, be careful not to let water drops adhere to the packages or bags nor let dewing occur
+with them.
+2) If electric current is applied when water drops are adhering to the surface of the TFT display
+module, when the TFT display module is being dewed or when it is placed under high humidity
+environments, the electrodes may be corroded and be careful about the above.
+9.3 Designing Precautions
+1)
+
+The absolute maximum ratings are the ratings which cannot be exceeded for TFT display module,
+and if these values are exceeded, panel damage may be happen.
+2) To prevent occurrence of malfunctioning by noise, pay attention to satisfy the VIL and VIH
+specifications and, at the same time, to make the signal line cable as short as possible.
+3) We recommend you to install excess current preventive unit (fuses, etc.) to the power circuit (VDD).
+(Recommend value: 0.5A)
+4) Pay sufficient attention to avoid occurrence of mutual noise interference with the neighboring
+devices.
+5) As for EMI, take necessary measures on the equipment side basically.
+6) When fastening the TFT display module, fasten the external plastic housing section.
+7) If power supply to the TFT display module is forcibly shut down by such errors as taking out the
+main battery while the TFT display panel is in operation, we cannot guarantee the quality of this
+OEL display module.
+8) The electric potential to be connected to the rear face of the IC chip should be as follows:
+* Connection (contact) to any other potential than the above may lead to rupture of the IC.
+9.4 Precautions when disposing of the TFT display modules
+1)
+
+Request the qualified companies to handle industrial wastes when disposing of the TFT display
+modules. Or, when burning them, be sure to observe the environmental and hygienic laws and
+regulations.
+9.5 Other Precautions
+1)
+
+2)
+
+When an TFT display module is operated for a long of time with fixed pattern may remain as an
+after image or slight contrast deviation may occur.
+Nonetheless, if the operation is interrupted and left unused for a while, normal state can be
+restored. Also, there will be no problem in the reliability of the module.
+To protect TFT display modules from performance drops by static electricity rapture, etc., do not
+touch the following sections whenever possible while handling the TFT display modules.
+* Pins and electrodes
+* Pattern layouts such as the FPC
+
+Page 17
+
+中景园电子技术有限公司
+电话：18601955397 QQ:2984664835 网络商城：https://oled-zjy.taobao.com
+3)
+
+4)
+
+5)
+
+With this TFT display module, the TFT driver is being exposed. Generally speaking,
+semiconductor elements change their characteristics when light is radiated according to the
+principle of the solar battery. Consequently, if this TFT driver is exposed to light, malfunctioning
+may occur.
+* Design the product and installation method so that the TFT driver may be shielded from light in
+actual usage.
+* Design the product and installation method so that the TFT driver may be shielded from light
+during the inspection processes.
+Although this TFT display module stores the operation state data by the commands and the
+indication data, when excessive external noise, etc. enters into the module, the internal status may
+be changed. It therefore is necessary to take appropriate measures to suppress noise
+generation or to protect from influences of noise on the system design.
+We recommend you to construct its software to make periodical refreshment of the operation
+statuses (re-setting of the commands and re-transference of the display data) to cope with
+catastrophic noise.
+
+10. Warranty:
+The warranty period shall last twelve (12) months from the date of delivery. Buyer shall be completed to
+assemble all the processes within the effective twelve (12) months. Limito technology Inc. shall be liable
+for replacing any products which contain defective material or process which do not conform to the product
+specification, applicable drawings and specifications during the warranty period. All products must be
+preserved, handled and appearance to permit efficient handling during warranty period. The warranty
+coverage would be exclusive while the returned goods are out of the terms above.
+11.Notice:
+No part of this material may be reproduces or duplicated in any form or by any means without the written
+permission of Limito technology Inc. Limito technology Inc. reserves the right to make changes to this
+material without notice. Limito technology Inc. does not assume any liability of any kind arising out of any
+inaccuracies contained in this material or due to its application or use in any product or circuit and, further,
+there is no representation that this material is applicable to products requiring high level reliability, such as,
+medical products. Moreover, no license to any intellectual property rights is granted by implication or
+otherwise, and there is no representation or warranty that anything made in accordance with this material
+will be free from any patent or copyright infringement of a third party. This material or portions thereof may
+contain technology or the subject relating to strategic products under the control of Foreign Exchange and
+Foreign Trade Law of Taiwan and may require an export license from the Ministry of International Trade
+and Industry or other approval from another government agency.
+
+Page 18
+
+

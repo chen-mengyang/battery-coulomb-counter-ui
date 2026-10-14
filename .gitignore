@@ -1,23 +1,22 @@
-# 编译产物
+# Build outputs
 *.o
 *.d
+*.su
 *.elf
 *.bin
 *.hex
 *.map
 
-# CubeIDE / Keil 工程
+# CubeIDE build dirs + launch (keep .ioc/.cproject/.project tracked)
 Debug/
 Release/
-*.ioc
-*.uvprojx
-*.uvoptx
+*.launch
 
-# 编辑器
+# Editors
 .vscode/
 .idea/
 *.swp
 
-# 系统文件
+# OS
 .DS_Store
 Thumbs.db
