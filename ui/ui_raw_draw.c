@@ -129,3 +129,19 @@ void ui_raw_update(const ui_raw_data_t *d)
         GFX_DrawText(x + w1 + 2 + w2 + 2, 210, FCN(), FCN_N(), FONT_RAW_BLOB, suf, CLR_CAP_TXT2);
     }
 }
+
+void ui_raw_draw_stats(float frame_ms, float fps)
+{
+    char a[16], b[16];
+    static const int n16 = (int)(sizeof(FONT_NUM16) / sizeof(FONT_NUM16[0]));
+    uint16_t ok  = CLR_CHG2;    /* 绿：达标 */
+    uint16_t bad = CLR_LOW2;    /* 红：未达标 */
+    snprintf(a, sizeof(a), "%.1f", frame_ms);
+    snprintf(b, sizeof(b), "%.1f", fps);
+    GFX_FillRect(0, 240, 240, 40, CLR_BG2);
+    GFX_DrawText(8, 249, FONT_NUM16, n16, FONT_RAW_BLOB, a,
+                 (frame_ms <= 40.0f) ? ok : bad);
+    GFX_DrawText((int16_t)(232 - GFX_TextWidth(FONT_NUM16, n16, b)), 249,
+                 FONT_NUM16, n16, FONT_RAW_BLOB, b,
+                 (fps >= 25.0f) ? ok : bad);
+}

@@ -109,7 +109,7 @@ lv_font_conv --font SourceHanSansCN-Regular.ttf \
   <sub>左=LVGL复刻 ｜ 右=裸机V2复刻（差异~7%，仅抗锯齿/字形）</sub>
 </p>
 
-零 LVGL 依赖，`RAM ~0（无帧缓冲）`，`Flash ~14KB（含4KB字库）`，`G431K8(64KB/32KB)` 随便装：
+零 LVGL 依赖，`RAM ~0（无帧缓冲）`，`Flash ~14KB（含4KB字库）`，`G431K8(64KB/32KB)` 随便装；42.5MHz SPI 下全屏重画单帧约 10~15ms，40ms 节拍稳定 **25Hz**（屏底状态带实时显示帧耗时与实测 FPS，绿=达标/红=未达标）：
 
 ```c
 ui_raw_data_t d = {0};
@@ -118,9 +118,9 @@ d.power_kw = 1.04f; d.capacity_ah = 19.6f; d.range_km = 50; d.charging = 0;
 
 ui_raw_init();              /* 上电一次，需先 ST7789_Init() */
 while (1) {
-    /* 每500ms置 refresh 式调用：直接 ui_raw_update(&d) 全屏重画 */
+    /* 25Hz：40ms 节拍全屏重画（节拍对齐实现见 Core/Src/main.c） */
     ui_raw_update(&d);
-    HAL_Delay(500);
+    HAL_Delay(40);
 }
 ```
 
@@ -161,7 +161,7 @@ d.power_kw = 1.04f; d.capacity_ah = 19.6f; d.range_km = 50; d.charging = 0;
 ui_init();            /* 初始化时调一次 */
 
 while (1) {
-    /* 100ms 采样一次：读 ADS1115 → 软件积分 → 填 d → 每 500ms 刷一次屏 */
+    /* 100ms 采样一次：读 ADS1115 → 软件积分 → 填 d → 刷屏 */
     ui_update(&d);
     HAL_Delay(100);
 }

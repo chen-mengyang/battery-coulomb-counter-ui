@@ -113,7 +113,7 @@ int main(void)
   /* LED on (active-low) ⇒ system is up and screen initialised. */
   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 
-  /* Run the Flappy Bird game (blocking; it owns KEY_BTN + LED from here on). */
+  /* Coulomb-counter UI demo runs in USER CODE 3 below (25Hz paced loop). */
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -123,22 +123,66 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  /* Coulomb-counter UI demo: 500ms full redraw.
-   * UI occupies y=0..239 (top aligned); bottom 40 rows kept as background. */
+  /* Coulomb-counter UI demo @ 25Hz:
+   * - full redraw on a fixed 40ms cadence (tick aligned; re-sync after overrun);
+   * - data still changes on the old 500ms rhythm (same visual pacing as before);
+   * - DWT frame timing, shown on the bottom 40-row status band (y=240..279):
+   *   left = frame time in ms, right = measured FPS (green = on target). */
   {
     static int t = 0;
     ui_raw_data_t d = { 0 };
+    static uint32_t nextFrame, dataAt, fpsWin;
+    static uint32_t fpsCnt = 0;
+    float msShow = 0.0f, fpsShow = 0.0f;
+    uint32_t cyc0;
+
+    /* DWT cycle counter: ms = cycles / 170000 (SYSCLK = 170MHz). */
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+
     d.soc = 76.0f;
-    d.voltage = 72.5f + (float)(t % 10) * 0.01f;
+    d.voltage = 72.5f;
     d.current = -12.3f;
     d.power_kw = 0.89f;
     d.capacity_ah = -1.0f;
     d.range_km = 50;
-    d.charging = (uint8_t)((t / 20) % 2);
-    ui_raw_update(&d);
-    GFX_FillRect(0, 240, 240, 40, GFX_RGB565(0x0B, 0x0E, 0x13));
-    t++;
-    HAL_Delay(500);
+    d.charging = 0;
+    /* Full clear incl. the bottom stats band. */
+    GFX_FillRect(0, 0, 240, 280, GFX_RGB565(0x0B, 0x0E, 0x13));
+    nextFrame = dataAt = fpsWin = HAL_GetTick();
+
+    while (1)
+    {
+      uint32_t now = HAL_GetTick();
+
+      /* 40ms cadence = 25Hz; on overrun drop missed slots and re-align. */
+      if ((int32_t)(now - nextFrame) < 0) continue;
+      nextFrame += 40;
+      if ((int32_t)(now - nextFrame) >= 0) nextFrame = now + 40;
+
+      if ((int32_t)(now - dataAt) >= 500) {
+        dataAt += 500;
+        t++;
+        d.voltage = 72.5f + (float)(t % 10) * 0.01f;
+        d.charging = (uint8_t)((t / 20) % 2);
+      }
+
+      cyc0 = DWT->CYCCNT;
+      ui_raw_update(&d);
+
+      /* Measured FPS: frames actually finished within a 1s window. */
+      fpsCnt++;
+      if ((int32_t)(now - fpsWin) >= 1000) {
+        fpsShow = (float)fpsCnt * 1000.0f / (float)(now - fpsWin);
+        fpsCnt = 0;
+        fpsWin = now;
+      }
+
+      /* Status band shows the previous frame's numbers (green = on target). */
+      ui_raw_draw_stats(msShow, fpsShow);
+      msShow = (float)(DWT->CYCCNT - cyc0) / 170000.0f;
+    }
   }
   }
   /* USER CODE END 3 */

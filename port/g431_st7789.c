@@ -10,6 +10,7 @@
  *  - y 直接透传“屏坐标”（本地屏可见 240x280；UI 只用 0..239）。
  *  - RGB565 字节序：ST7789 串行要求 MSB 先行，与 GFX_RGB565 一致。
  *  - ST7789_Init 不在这里实现：复用工程 st7789_init()（SWRESET、无 RST 脚）。
+ *  - 发送走直写 SPI 寄存器 sp_write + 批量块推（25Hz 全屏刷新的关键）。
  */
 #include "g431_port.h"
 
@@ -22,17 +23,30 @@
 #define P_DC_CMD() HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_RESET)
 #define P_DC_DAT() HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET)
 
+/* 直写 SPI 寄存器发送：绕开 HAL_SPI_Transmit 每次调用的状态机开销。
+ * 8bit 帧模式（MX_SPI3_Init），逐字节写 DR 由 TXE 按线速（42.5MHz）自然
+ * 背压；结束后等 TX FIFO 排空 + BSY 清零，才允许切换 DC/CS。 */
+static void sp_write(const uint8_t *b, uint32_t n)
+{
+    while (n--) {
+        while (!(hspi3.Instance->SR & SPI_SR_TXE)) {}
+        *(__IO uint8_t *)&hspi3.Instance->DR = *b++;
+    }
+    while (hspi3.Instance->SR & SPI_SR_FTLVL) {}
+    while (hspi3.Instance->SR & SPI_SR_BSY) {}
+}
+
 static void p_wr_cmd(uint8_t c)
 {
     P_CS_L(); P_DC_CMD();
-    HAL_SPI_Transmit(&hspi3, &c, 1, HAL_MAX_DELAY);
+    sp_write(&c, 1);
     P_CS_H();
 }
 
 static void p_wr_data(const uint8_t *b, uint32_t n)
 {
     P_CS_L(); P_DC_DAT();
-    HAL_SPI_Transmit(&hspi3, (uint8_t *)b, n, HAL_MAX_DELAY);
+    sp_write(b, n);
     P_CS_H();
 }
 
@@ -54,26 +68,45 @@ void ST7789_SetWindow(int16_t x, int16_t y, int16_t w, int16_t h)
 
 void ST7789_PushPixels(const uint16_t *px, int32_t n)
 {
-    int32_t i;
+    static uint8_t chunk[512];
+    int32_t left = n;
+    if (left <= 0) return;
     P_CS_L(); P_DC_DAT();
-    for (i = 0; i < n; i++) {
-        uint8_t b[2];
-        b[0] = (uint8_t)(px[i] >> 8);
-        b[1] = (uint8_t)(px[i] & 0xFF);
-        HAL_SPI_Transmit(&hspi3, b, 2, HAL_MAX_DELAY);
+    while (left > 0) {
+        uint32_t cnt = (left > 256) ? 256u : (uint32_t)left;
+        uint32_t i;
+        for (i = 0; i < cnt; i++) {
+            chunk[2 * i]     = (uint8_t)(px[i] >> 8);   /* MSB first */
+            chunk[2 * i + 1] = (uint8_t)(px[i]);
+        }
+        sp_write(chunk, cnt * 2u);
+        px += cnt;
+        left -= (int32_t)cnt;
     }
     P_CS_H();
 }
 
 void ST7789_PushPixelsSolid(uint16_t color, int32_t n)
 {
-    uint8_t b[2];
-    int32_t i;
-    b[0] = (uint8_t)(color >> 8);
-    b[1] = (uint8_t)(color & 0xFF);
+    static uint8_t pat[512];          /* 256 px 纯色样例，整块反复重发 */
+    static uint16_t pat_col;
+    static uint8_t pat_valid;
+    int32_t left = n;
+    if (left <= 0) return;
+    if (!pat_valid || pat_col != color) {
+        uint32_t i;
+        for (i = 0; i < sizeof(pat); i += 2) {
+            pat[i]     = (uint8_t)(color >> 8);         /* MSB first */
+            pat[i + 1] = (uint8_t)(color & 0xFF);
+        }
+        pat_col = color;
+        pat_valid = 1;
+    }
     P_CS_L(); P_DC_DAT();
-    for (i = 0; i < n; i++) {
-        HAL_SPI_Transmit(&hspi3, b, 2, HAL_MAX_DELAY);
+    while (left > 0) {
+        uint32_t px = (left > 256) ? 256u : (uint32_t)left;
+        sp_write(pat, px * 2u);
+        left -= (int32_t)px;
     }
     P_CS_H();
 }

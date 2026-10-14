@@ -13,7 +13,7 @@ void GFX_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
     if (x < 0) { w += x; x = 0; }
     if (y < 0) { h += y; y = 0; }
     if (x + w > 240) w = 240 - x;
-    if (y + h > 240) h = 240 - y;
+    if (y + h > 280) h = 280 - y;
     if (w <= 0 || h <= 0) return;
     ST7789_SetWindow(x, y, w, h);
     ST7789_PushPixelsSolid(color, (int32_t)w * h);
@@ -116,11 +116,20 @@ void GFX_DrawText(int16_t x, int16_t y, const raw_glyph_t *tab, int n,
         if (!g || g->len == 0) { cx += (g ? g->w : 6) + 1; continue; }
         stride = (g->w + 7) / 8;
         for (row = 0; row < g->h; row++) {
-            for (col = 0; col < g->w; col++) {
-                uint8_t byte = blob[g->off + row * stride + col / 8];
-                if (byte & (0x80 >> (col % 8))) {
-                    ST7789_SetWindow(cx + col, y + row, 1, 1);
-                    ST7789_PushPixelsSolid(color, 1);
+            int run = -1;   /* 行内连续亮点段起点列，-1 = 无 */
+            for (col = 0; col <= g->w; col++) {
+                int lit = 0;
+                if (col < g->w) {
+                    uint8_t byte = blob[g->off + row * stride + col / 8];
+                    lit = (byte & (0x80 >> (col % 8))) != 0;
+                }
+                if (lit) {
+                    if (run < 0) run = col;
+                } else if (run >= 0) {
+                    /* 按行内连续段整段开窗推送（25Hz 关键：避免逐像素开窗） */
+                    ST7789_SetWindow(cx + run, y + row, col - run, 1);
+                    ST7789_PushPixelsSolid(color, col - run);
+                    run = -1;
                 }
             }
         }

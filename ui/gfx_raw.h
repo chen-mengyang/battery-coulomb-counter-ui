@@ -1,5 +1,6 @@
 /**
- * gfx_raw.h - 裸机 2D 原语（ST7789 240x240 直刷，无帧缓冲）
+ * gfx_raw.h - 裸机 2D 原语（ST7789 直刷，无帧缓冲）
+ * UI 240x240 顶部对齐 + 屏底 40 行状态带（y=240..279），总高 280。
  *
  * 只提供本 UI 需要的最小集合：
  *   FillRect / FillRoundRect / DrawRoundBorder / BlitGlyph1bit / Text*
