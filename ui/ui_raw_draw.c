@@ -1,5 +1,5 @@
 /**
- * ui_raw_draw.c - 裸机 V2 界面 part2: 全屏重画（布局与 ui_lvgl.c 一致）
+ * ui_raw_draw.c - 裸机 V2 界面 part2: 增量重画（脏矩形分区，布局与 ui_lvgl.c 一致）
  *
  *   y    6~26   状态胶囊 92,6,56x20 r10
  *   y   28~124  电池外壳16,28,196x96 r18/描边3 / 填充20,32,h88 r13 / 电极头215,52,9x48 r4
@@ -13,6 +13,7 @@
 #include "gfx_raw.h"
 #include "font_raw.h"
 #include <stdio.h>
+#include <string.h>
 
 #define CLR_BG2       GFX_RGB565(0x0B,0x0E,0x13)
 #define CLR_TEXT2     GFX_RGB565(0xFF,0xFF,0xFF)
@@ -43,6 +44,18 @@ static int FN16_N(void) { return (int)(sizeof(FONT_NUM16)/sizeof(FONT_NUM16[0]))
 static const raw_glyph_t *FN40(void) { return FONT_NUM40; }
 static int FN40_N(void) { return (int)(sizeof(FONT_NUM40)/sizeof(FONT_NUM40[0])); }
 
+/* 静态层：背景 + 电池外壳描边 + 电极头 + 两条分隔线（上电画一次）。
+ * 之后 ui_raw_update 只做脏矩形分区擦/画（同 flappy 增量刷新策略），
+ * 不再整屏先清后画 —— 25Hz 下无整屏闪烁。 */
+void ui_raw_draw_static(void)
+{
+    GFX_FillRect(0, 0, 240, 240, CLR_BG2);
+    GFX_DrawRoundBorder(BX2, BY2, BW2, BH2, 18, 3, CLR_SHELL2);
+    GFX_FillRoundRect(BX2 + BW2 + 3, 52, 9, 48, 4, CLR_SHELL2);
+    GFX_FillRect(24, 156, 192, 1, CLR_LINE2);
+    GFX_FillRect(24, 204, 192, 1, CLR_LINE2);
+}
+
 void ui_raw_update(const ui_raw_data_t *d)
 {
     char buf[32];
@@ -57,7 +70,8 @@ void ui_raw_update(const ui_raw_data_t *d)
     scol = ui_raw_soc_color(soc);
     fill_w = (BIW2 * soc) / 100;
 
-    GFX_FillRect(0, 0, 240, 240, CLR_BG2);
+    /* 1) 状态胶囊 (92,6,56x20)：按形状擦除重画 */
+    GFX_FillRoundRect(92, 6, 56, 20, 10, CLR_BG2);
 
     if (d->charging) {
         GFX_FillRoundRect(92, 6, 56, 20, 10, CLR_TAG_BG_C2);
@@ -69,8 +83,9 @@ void ui_raw_update(const ui_raw_data_t *d)
             FONT_RAW_BLOB, "放电中", CLR_DISCH2);
     }
 
-    GFX_DrawRoundBorder(BX2, BY2, BW2, BH2, 18, 3, CLR_SHELL2);
-    GFX_FillRoundRect(BX2 + BW2 + 3, 52, 9, 48, 4, CLR_SHELL2);
+    /* 2) 电池内部：用挖空同形状的圆角矩形擦除（保住外壳描边与内圆角），
+     *    重画填充条 + SOC 大字 */
+    GFX_FillRoundRect(BX2 + 3, BY2 + 3, BW2 - 6, BH2 - 6, 15, CLR_BG2);
     if (fill_w > 0)
         GFX_FillRoundRect(BX2 + 4, BY2 + 4, fill_w, BH2 - 8, 13, scol);
 
@@ -82,12 +97,14 @@ void ui_raw_update(const ui_raw_data_t *d)
                      (soc <= 10) ? CLR_LOW2 : CLR_TEXT2);
     }
 
+    /* 3) 续航行 (y128..149)：擦矩形重画 */
+    GFX_FillRect(0, 128, 240, 22, CLR_BG2);
     if (d->range_km >= 0) snprintf(buf2, sizeof(buf2), "续航 %d km", d->range_km);
     else snprintf(buf2, sizeof(buf2), "续航 --");
     GFX_DrawTextCentered(130, 208, FCN(), FCN_N(), FONT_RAW_BLOB, buf2, CLR_RANGE2);
 
-    GFX_FillRect(24, 156, 192, 1, CLR_LINE2);
-    GFX_FillRect(24, 204, 192, 1, CLR_LINE2);
+    /* 4) 三列数值+标签 (y160..203，避开 y156/204 分隔线)：擦矩形重画 */
+    GFX_FillRect(0, 160, 240, 44, CLR_BG2);
 
     for (i = 0; i < 3; i++) {
         const char *unit = "";
@@ -110,6 +127,8 @@ void ui_raw_update(const ui_raw_data_t *d)
             FCN(), FCN_N(), FONT_RAW_BLOB, unit, CLR_MUTED2);
     }
 
+    /* 5) 自学习容量行 (y206..231)：擦矩形重画 */
+    GFX_FillRect(0, 206, 240, 26, CLR_BG2);
     {
         const char *pre = "自学习容量：";
         const char *suf = "(±5%)";
@@ -134,10 +153,18 @@ void ui_raw_draw_stats(float frame_ms, float fps)
 {
     char a[16], b[16];
     static const int n16 = (int)(sizeof(FONT_NUM16) / sizeof(FONT_NUM16[0]));
+    static char lastA[16], lastB[16];
     uint16_t ok  = CLR_CHG2;    /* 绿：达标 */
     uint16_t bad = CLR_LOW2;    /* 红：未达标 */
+    /* 0.5ms 量化：稳态下字符串不变，状态带几乎不动（避免每帧清40 行微闪） */
+    frame_ms = ((int)(frame_ms * 2.0f + 0.5f)) / 2.0f;
+    fps = ((int)(fps * 10.0f + 0.5f)) / 10.0f;
     snprintf(a, sizeof(a), "%.1f", frame_ms);
     snprintf(b, sizeof(b), "%.1f", fps);
+    if (strcmp(a, lastA) == 0 && strcmp(b, lastB) == 0)
+        return;                 /* 数值没变就不动状态带 */
+    strcpy(lastA, a);
+    strcpy(lastB, b);
     GFX_FillRect(0, 240, 240, 40, CLR_BG2);
     GFX_DrawText(8, 249, FONT_NUM16, n16, FONT_RAW_BLOB, a,
                  (frame_ms <= 40.0f) ? ok : bad);

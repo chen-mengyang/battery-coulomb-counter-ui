@@ -109,7 +109,7 @@ lv_font_conv --font SourceHanSansCN-Regular.ttf \
   <sub>左=LVGL复刻 ｜ 右=裸机V2复刻（差异~7%，仅抗锯齿/字形）</sub>
 </p>
 
-零 LVGL 依赖，`RAM ~0（无帧缓冲）`，`Flash ~14KB（含4KB字库）`，`G431K8(64KB/32KB)` 随便装；42.5MHz SPI 下全屏重画单帧约 10~15ms，40ms 节拍稳定 **25Hz**（屏底状态带实时显示帧耗时与实测 FPS，绿=达标/红=未达标）：
+零 LVGL 依赖，`RAM ~0（无帧缓冲）`，`Flash ~14KB（含4KB字库）`，`G431K8(64KB/32KB)` 随便装；42.5MHz SPI 下脏矩形增量刷新单帧约 4~6ms，40ms 节拍稳定 **25Hz**（同 flappy 增量策略，无整屏闪烁；屏底状态带实时显示帧耗时与实测 FPS，绿=达标/红=未达标）：
 
 ```c
 ui_raw_data_t d = {0};
@@ -117,8 +117,9 @@ d.soc = 76.0f; d.voltage = 84.52f; d.current = -12.3f;
 d.power_kw = 1.04f; d.capacity_ah = 19.6f; d.range_km = 50; d.charging = 0;
 
 ui_raw_init();              /* 上电一次，需先 ST7789_Init() */
+ui_raw_draw_static();       /* 上电一次：外壳/分隔线等静态层 */
 while (1) {
-    /* 25Hz：40ms 节拍全屏重画（节拍对齐实现见 Core/Src/main.c） */
+    /* 25Hz：40ms 节拍 + 脏矩形增量刷新（无整屏清屏，不闪） */
     ui_raw_update(&d);
     HAL_Delay(40);
 }

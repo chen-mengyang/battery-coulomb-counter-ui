@@ -24,6 +24,9 @@ typedef struct {
 } ui_raw_data_t;
 
 void ui_raw_init(void);
+/* 静态层：背景+电池外壳+电极头+分隔线，上电调一次（之后 ui_raw_update
+ * 只做脏矩形分区刷新，不再整屏清屏 → 无闪烁） */
+void ui_raw_draw_static(void);
 void ui_raw_update(const ui_raw_data_t *d);
 /* 屏底 40 行状态带（y=240..279）：左=上一帧耗时 ms，右=实测 FPS；
  * 绿=帧耗时 <=40ms 且 fps >=25（25Hz 达标），红=未达标。 */

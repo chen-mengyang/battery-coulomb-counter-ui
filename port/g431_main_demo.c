@@ -16,8 +16,10 @@
  *   st7789_init();                      // SWRESET 初始化 + 黑屏
  *   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);  // LED 常亮
  *   ui_raw_init();                      // 清 240x240 背景
- *   // 底部 40 行是状态带（帧耗时/FPS），整屏清一次背景即可
- *   GFX_FillRect(0, 0, 240, 280, GFX_RGB565(0x0B,0x0E,0x13));
+ *   // 底部 40 行是状态带（帧耗时/FPS）
+ *   GFX_FillRect(0, 240, 240, 40, GFX_RGB565(0x0B,0x0E,0x13));
+ *   ui_raw_draw_static();               // 外壳/电极头/分隔线（首帧一次）
+ *   // 之后 ui_raw_update 为脏矩形增量刷新，不再整屏清屏 → 无闪烁
  *
  * ---- USER CODE BEGIN 3 (while 1) ----
  *   // 25Hz 全屏刷新：40ms 节拍 + 屏底帧耗时/FPS 统计（DWT 计时、

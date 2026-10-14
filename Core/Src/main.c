@@ -124,7 +124,9 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
   /* Coulomb-counter UI demo @ 25Hz:
-   * - full redraw on a fixed 40ms cadence (tick aligned; re-sync after overrun);
+   * - dirty-rect refresh on a fixed 40ms cadence (tick aligned; re-sync after
+   *   overrun). Static layer is drawn once; per frame only the changed
+   *   partitions are erased+redrawn (flappy-style, no full-screen flicker);
    * - data still changes on the old 500ms rhythm (same visual pacing as before);
    * - DWT frame timing, shown on the bottom 40-row status band (y=240..279):
    *   left = frame time in ms, right = measured FPS (green = on target). */
@@ -148,8 +150,13 @@ int main(void)
     d.capacity_ah = -1.0f;
     d.range_km = 50;
     d.charging = 0;
-    /* Full clear incl. the bottom stats band. */
-    GFX_FillRect(0, 0, 240, 280, GFX_RGB565(0x0B, 0x0E, 0x13));
+    /* Static layer once: bg clear (incl. bottom band) + shell + lines.
+     * Afterwards ui_raw_update only refreshes dirty partitions (flappy-style
+     * incremental drawing) - no per-frame full-screen clear->redraw, which
+     * caused visible flicker at 25Hz. */
+    ui_raw_init();                 /* clears the 240x240 UI area */
+    GFX_FillRect(0, 240, 240, 40, GFX_RGB565(0x0B, 0x0E, 0x13));
+    ui_raw_draw_static();          /* shell / electrode / separator lines */
     nextFrame = dataAt = fpsWin = HAL_GetTick();
 
     while (1)
