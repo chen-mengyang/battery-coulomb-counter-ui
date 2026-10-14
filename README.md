@@ -80,6 +80,28 @@ lv_color_t c = lv_color_hsv_to_rgb(soc * 12 / 10, 78, 86);
 └── README.md
 ```
 
+## 编译环境（本工程实测，2026-10）
+
+| 项 | 版本 / 配置 |
+|---|---|
+| IDE | **STM32CubeIDE 2.2.0**（Eclipse 平台 4.38.0，安装于 `/opt/st/stm32cubeide_2.2.0`） |
+| MCU | STM32G431C8Tx（Cortex-M4 @170MHz，FPU FPv4-SP-D16 hard-float，**Flash 128KB / RAM 32KB**，UFQFPN48） |
+| 固件包 | STM32Cube **FW_G4 V1.6.3**（HAL + CMSIS，见 `.ioc` 的 `ProjectManager.FirmwarePackage`） |
+| 工具链 | **arm-none-eabi-gcc 14.3.1**（GNU Tools for STM32 14.3.rel1.20251027-0700，随 CubeIDE 内置，`.cproject` 经 `${gnu_tools_for_stm32_compiler_path}` 引用） |
+| C 运行时库 | newlib **nano**（`-specs=nano.specs`；缺省禁 `%f` 浮点格式化 → 本项目全定点化，见下节「常见坑」） |
+| 预定义宏 | `USE_HAL_DRIVER`、`STM32G431xx` |
+| 链接脚本 | `STM32G431C8TX_FLASH.ld`（Debug 配置） |
+| 调试器 | 板载 ST-LINK V2-1 + ST-Link GDB server（随 IDE） |
+| 固件产物 | `Debug/battery-coulomb-counter-ui.elf`（SPI3 42.5MHz + DMA 直刷屏） |
+
+打开方式：CubeIDE 2.2.0 `File → Open Projects from File System…` 选本目录直接编译烧录。
+低版本 CubeIDE 也能打开；若提示固件包版本不一致，按向导处理 `.ioc` 升级即可（代码对 FW_G4 1.5.x~1.6.x 兼容）。
+
+PC 侧（仅字库生成 + 渲染验证用，不进固件）：
+- Python 3.x + Pillow（`tools/render_*.py`、`ui/fontgen.py`）
+- 字体：Noto Sans CJK（界面中文 12px）+ DejaVu Sans Bold（数字 16/40px）
+- 重新生成 1-bit 点阵字库：`python3 ui/fontgen.py`
+
 ## 生成中文子集字库
 
 界面用到的汉字一共十几个：放电压流功率续航自学习容量误差充中±%()：。用 lv_font_conv 生成 12px 子集，约 2~3KB flash：
@@ -110,7 +132,7 @@ lv_font_conv --font SourceHanSansCN-Regular.ttf \
   <sub>左=LVGL复刻 ｜ 右=裸机V2复刻（差异~7%，仅抗锯齿/字形）</sub>
 </p>
 
-零 LVGL 依赖，`RAM ~0（无帧缓冲）`，`Flash ~14KB（含4KB字库）`，`G431K8(64KB/32KB)` 随便装；42.5MHz SPI 下**元素级槽位刷新**单帧约 4~8ms，40ms 节拍稳定 **25Hz**——内容没变整帧跳过、变了只做小块擦+画（同 flappy 策略，无整屏闪烁；240x280 面板由 port 层 G431_YOFF 垂直居中）：
+零 LVGL 依赖，`RAM ~0（无帧缓冲）`，`Flash ~14KB（含4KB字库）`，`G431C8(128KB/32KB)` 绰绰有余；42.5MHz SPI 下**元素级槽位刷新**单帧约 4~8ms，40ms 节拍稳定 **25Hz**——内容没变整帧跳过、变了只做小块擦+画（同 flappy 策略，无整屏闪烁；240x280 面板由 port 层 G431_YOFF 垂直居中）：
 
 ```c
 ui_raw_data_t d = {0};
