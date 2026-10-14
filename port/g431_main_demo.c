@@ -18,8 +18,9 @@
  *   ui_raw_init();                      // 清 240x240 背景
  *   // 底部 40 行是状态带（帧耗时/FPS）
  *   GFX_FillRect(0, 240, 240, 40, GFX_RGB565(0x0B,0x0E,0x13));
- *   ui_raw_draw_static();               // 外壳/电极头/分隔线（首帧一次）
- *   // 之后 ui_raw_update 为脏矩形增量刷新，不再整屏清屏 → 无闪烁
+ *   ui_raw_draw_static();               // 外壳/分隔线/单位标签/前后缀（首帧一次）
+ *   // 之后 ui_raw_update：内容没变整帧跳过（零像素）；变了只做元素级
+ *   // 槽位擦+画（单元素空白 <1ms）→ 25Hz 无闪烁
  *
  * ---- USER CODE BEGIN 3 (while 1) ----
  *   // 25Hz 全屏刷新：40ms 节拍 + 屏底帧耗时/FPS 统计（DWT 计时、

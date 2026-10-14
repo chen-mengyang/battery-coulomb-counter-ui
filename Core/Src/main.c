@@ -123,41 +123,37 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  /* Coulomb-counter UI demo @ 25Hz:
+  /* Coulomb-counter UI demo @ 25Hz with LINKED simulation data:
    * - dirty-rect refresh on a fixed 40ms cadence (tick aligned; re-sync after
-   *   overrun). Static layer is drawn once; per frame only the changed
-   *   partitions are erased+redrawn (flappy-style, no full-screen flicker);
-   * - data still changes on the old 500ms rhythm (same visual pacing as before);
-   * - DWT frame timing, shown on the bottom 40-row status band (y=240..279):
+   *   overrun). Static layer drawn once; ui_raw_update skips unchanged frames
+   *   entirely and only does small element-level erase+draw (no flicker);
+   * - linked simulation per frame: soc 0->100% sawtooth (8s/round),
+   *   range = soc*0.7 km, U = 60+soc*0.24 V, charge/discharge toggles every
+   *   4s with |I| 10..14A sawtooth, P = U*|I|/1000 kW,
+   *   capacity self-learning ramp 0->19.6Ah (30s/round);
+   * - DWT frame timing on the bottom 40-row status band (y=240..279):
    *   left = frame time in ms, right = measured FPS (green = on target). */
   {
-    static int t = 0;
     ui_raw_data_t d = { 0 };
-    static uint32_t nextFrame, dataAt, fpsWin;
+    static uint32_t nextFrame, fpsWin;
     static uint32_t fpsCnt = 0;
     float msShow = 0.0f, fpsShow = 0.0f;
     uint32_t cyc0;
+    uint32_t frame = 0;
+    float soc_f = 0.0f, cap_f = 0.0f, iA = 10.0f;
 
     /* DWT cycle counter: ms = cycles / 170000 (SYSCLK = 170MHz). */
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CYCCNT = 0;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
-    d.soc = 76.0f;
-    d.voltage = 72.5f;
-    d.current = -12.3f;
-    d.power_kw = 0.89f;
-    d.capacity_ah = -1.0f;
-    d.range_km = 50;
-    d.charging = 0;
-    /* Static layer once: bg clear (incl. bottom band) + shell + lines.
-     * Afterwards ui_raw_update only refreshes dirty partitions (flappy-style
-     * incremental drawing) - no per-frame full-screen clear->redraw, which
-     * caused visible flicker at 25Hz. */
+    /* Static layer once: bg clear (incl. bottom band) + shell + labels.
+     * Afterwards ui_raw_update only refreshes changed element slots -
+     * no per-frame full-screen clear->redraw (that caused visible flicker). */
     ui_raw_init();                 /* clears the 240x240 UI area */
     GFX_FillRect(0, 240, 240, 40, GFX_RGB565(0x0B, 0x0E, 0x13));
-    ui_raw_draw_static();          /* shell / electrode / separator lines */
-    nextFrame = dataAt = fpsWin = HAL_GetTick();
+    ui_raw_draw_static();          /* shell / lines / unit labels / cap affixes */
+    nextFrame = fpsWin = HAL_GetTick();
 
     while (1)
     {
@@ -168,12 +164,20 @@ int main(void)
       nextFrame += 40;
       if ((int32_t)(now - nextFrame) >= 0) nextFrame = now + 40;
 
-      if ((int32_t)(now - dataAt) >= 500) {
-        dataAt += 500;
-        t++;
-        d.voltage = 72.5f + (float)(t % 10) * 0.01f;
-        d.charging = (uint8_t)((t / 20) % 2);
-      }
+      /* ---- Linked simulation data (every frame @40ms) ---- */
+      frame++;
+      soc_f += 0.5f;                              /* 0->100% in 8s */
+      if (soc_f >= 100.0f) soc_f = 0.0f;
+      iA = 10.0f + (float)(frame % 9) * 0.5f;     /* |I| 10..14A sawtooth */
+      cap_f += 19.6f / 750.0f;                    /* 0->19.6Ah in 30s */
+      if (cap_f >= 19.6f) cap_f = 0.0f;
+      d.soc = soc_f;
+      d.range_km = (int)(soc_f * 0.7f + 0.5f);    /* 0..70 km */
+      d.voltage = 60.0f + soc_f * 0.24f;          /* 60.0..84.0 V */
+      d.charging = (uint8_t)((frame / 100) & 1);  /* toggle every 4s */
+      d.current = d.charging ? -iA : iA;          /* charge = negative */
+      d.power_kw = d.voltage * iA / 1000.0f;      /* U*|I|/1000 kW */
+      d.capacity_ah = cap_f;
 
       cyc0 = DWT->CYCCNT;
       ui_raw_update(&d);

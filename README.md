@@ -109,7 +109,7 @@ lv_font_conv --font SourceHanSansCN-Regular.ttf \
   <sub>左=LVGL复刻 ｜ 右=裸机V2复刻（差异~7%，仅抗锯齿/字形）</sub>
 </p>
 
-零 LVGL 依赖，`RAM ~0（无帧缓冲）`，`Flash ~14KB（含4KB字库）`，`G431K8(64KB/32KB)` 随便装；42.5MHz SPI 下脏矩形增量刷新单帧约 4~6ms，40ms 节拍稳定 **25Hz**（同 flappy 增量策略，无整屏闪烁；屏底状态带实时显示帧耗时与实测 FPS，绿=达标/红=未达标）：
+零 LVGL 依赖，`RAM ~0（无帧缓冲）`，`Flash ~14KB（含4KB字库）`，`G431K8(64KB/32KB)` 随便装；42.5MHz SPI 下**元素级槽位刷新**单帧约 4~8ms，40ms 节拍稳定 **25Hz**——内容没变整帧跳过、变了只做小块擦+画（同 flappy 策略，无整屏闪烁；屏底状态带实时显示帧耗时与实测 FPS，绿=达标/红=未达标）：
 
 ```c
 ui_raw_data_t d = {0};
