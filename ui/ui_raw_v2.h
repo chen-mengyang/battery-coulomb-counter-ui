@@ -24,9 +24,10 @@ typedef struct {
 } ui_raw_data_t;
 
 void ui_raw_init(void);
-/* 静态层：背景+电池外壳+电极头+分隔线，上电调一次（之后 ui_raw_update
- * 只做脏矩形分区刷新，不再整屏清屏 → 无闪烁） */
-void ui_raw_draw_static(void);
+/* 静态层：背景+电池外壳+分隔线+单位标签+前后缀，并按 d 当前值一次性画出
+ * 电压/电流/功率/容量（静态显示不刷新）；d 可传 NULL 只画框架。
+ * 之后 ui_raw_update 只刷新 SOC/续航/充放电（跳帧+元素槽位，无闪烁） */
+void ui_raw_draw_static(const ui_raw_data_t *d);
 void ui_raw_update(const ui_raw_data_t *d);
 /* 屏底 40 行状态带（y=240..279）：左=上一帧耗时 ms，右=实测 FPS；
  * 绿=帧耗时 <=40ms 且 fps >=25（25Hz 达标），红=未达标。 */

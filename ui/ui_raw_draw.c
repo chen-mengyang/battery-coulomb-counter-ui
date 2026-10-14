@@ -71,14 +71,13 @@ static void slot_set(ui_slot_t *s, int16_t x, int16_t y, int16_t w, int16_t h)
 #define CAPV_W  62                    /* 值槽固定宽度（"19.6Ah"=60，留余量） */
 static int16_t cap_vx;                /* 值槽 x（ui_raw_draw_static 计算） */
 
-/* 帧间快照：内容全没变 → ui_raw_update 直接返回（零像素） */
+/* 帧间快照：内容全没变 → ui_raw_update 直接返回（零像素）。
+ * 动态项只有 SOC/续航/充放电 —— 电压电流功率容量为静态绘制（不参与）。 */
 typedef struct {
     int16_t fill_w;
     uint8_t charging;
     char socstr[8];
     char rangestr[20];
-    char vstr[3][12];
-    char capstr[16];
     uint8_t on;
 } ui_snap_t;
 
@@ -89,9 +88,18 @@ static int FN16_N(void) { return (int)(sizeof(FONT_NUM16)/sizeof(FONT_NUM16[0]))
 static const raw_glyph_t *FN40(void) { return FONT_NUM40; }
 static int FN40_N(void) { return (int)(sizeof(FONT_NUM40)/sizeof(FONT_NUM40[0])); }
 
-/* 静态层：首帧画一次，之后 ui_raw_update 只做元素级槽位刷新（跳帧+小块
- * 擦画紧挨），不再整屏/整区先清后画 —— 25Hz 下无闪烁（flappy 同策略）。 */
-void ui_raw_draw_static(void)
+/* 三列静态数值：居中于 72px 格（y162），画一次不再刷新 */
+static void draw_col_value(int cx, const char *s, uint16_t col)
+{
+    uint16_t tw = GFX_TextWidth(FN16(), FN16_N(), s);
+    GFX_DrawText((int16_t)(cx - 36 + (72 - tw) / 2), 162, FN16(), FN16_N(),
+                 FONT_RAW_BLOB, s, col);
+}
+
+/* 静态层：首帧画一次。框架（壳/分隔线/单位标签/前后缀）+ 静态数值
+ * （电压/电流/功率/容量取 d 当前值，只画一次不参与刷新）；
+ * 动态元素只有：SOC 大字、续航行、充放电胶囊（由 ui_raw_update 槽位刷新）。 */
+void ui_raw_draw_static(const ui_raw_data_t *d)
 {
     uint16_t w1, w3, x;
     GFX_FillRect(0, 0, 240, 240, CLR_BG2);
@@ -99,7 +107,7 @@ void ui_raw_draw_static(void)
     GFX_FillRoundRect(BX2 + BW2 + 3, 52, 9, 48, 4, CLR_SHELL2);
     GFX_FillRect(24, 156, 192, 1, CLR_LINE2);
     GFX_FillRect(24, 204, 192, 1, CLR_LINE2);
-    /* 三列单位标签（固定不变） */
+    /* 三列单位标签（y184，固定不变） */
     GFX_DrawTextCenteredIn(60 - 36, 184, 72, FCN(), FCN_N(),
         FONT_RAW_BLOB, "电压 V", CLR_MUTED2);
     GFX_DrawTextCenteredIn(120 - 36, 184, 72, FCN(), FCN_N(),
@@ -114,46 +122,51 @@ void ui_raw_draw_static(void)
     GFX_DrawText(x, 210, FCN(), FCN_N(), FONT_RAW_BLOB, CAP_PRE, CLR_CAP_TXT2);
     GFX_DrawText((int16_t)(x + w1 + 2 + CAPV_W + 2), 210, FCN(), FCN_N(),
                  FONT_RAW_BLOB, CAP_SUF, CLR_CAP_TXT2);
+    /* 静态数值（d 非空时）：电压/电流/功率三列 + 容量值槽 */
+    if (d) {
+        char v0[12], v1[12], v2[12], cv[16];
+        float a = d->current >= 0 ? d->current : -d->current;
+        snprintf(v0, sizeof(v0), "%.2f", d->voltage);
+        snprintf(v1, sizeof(v1), "%s%.1f", d->charging ? "+" : "-", a);
+        snprintf(v2, sizeof(v2), "%.2f", d->power_kw);
+        if (d->capacity_ah >= 0.0f)
+            snprintf(cv, sizeof(cv), "%.1fAh", d->capacity_ah);
+        else
+            snprintf(cv, sizeof(cv), "--");
+        draw_col_value(60, v0, CLR_TEXT2);
+        draw_col_value(120, v1, d->charging ? CLR_CHG2 : CLR_DISCH2);
+        draw_col_value(180, v2, CLR_TEXT2);
+        {
+            uint16_t tw = GFX_TextWidth(FN16(), FN16_N(), cv);
+            GFX_DrawText((int16_t)(cap_vx + (CAPV_W - tw) / 2), 209,
+                         FN16(), FN16_N(), FONT_RAW_BLOB, cv, CLR_TEXT2);
+        }
+    }
 }
 
 void ui_raw_update(const ui_raw_data_t *d)
 {
-    char socstr[8], rangestr[20], vstr[3][12], capstr[16];
-    int soc, fill_w, i;
+    char socstr[8], rangestr[20];
+    int soc, fill_w;
     uint16_t scol;
-    static const int col_x[3] = { 60, 120, 180 };
     static ui_snap_t snap;
-    static ui_slot_t slot_soc, slot_rng, slot_col[3], slot_cap;
+    static ui_slot_t slot_soc, slot_rng;
 
     if (!d) return;
     soc = ui_raw_clamp_soc(d->soc);
     scol = ui_raw_soc_color(soc);
     fill_w = (BIW2 * soc) / 100;
 
-    /* 本帧全部目标内容先渲染成串（跳帧比较与绘制共用） */
+    /* 本帧动态内容渲染成串（跳帧比较与绘制共用） */
     snprintf(socstr, sizeof(socstr), "%d%%", soc);
     if (d->range_km >= 0) snprintf(rangestr, sizeof(rangestr), "续航 %d km", d->range_km);
     else snprintf(rangestr, sizeof(rangestr), "续航 --");
-    snprintf(vstr[0], sizeof(vstr[0]), "%.2f", d->voltage);
-    {
-        float a = d->current >= 0 ? d->current : -d->current;
-        snprintf(vstr[1], sizeof(vstr[1]), "%s%.1f", d->charging ? "+" : "-", a);
-    }
-    snprintf(vstr[2], sizeof(vstr[2]), "%.2f", d->power_kw);
-    if (d->capacity_ah >= 0.0f)
-        snprintf(capstr, sizeof(capstr), "%.1fAh", d->capacity_ah);
-    else
-        snprintf(capstr, sizeof(capstr), "--");
 
-    /* 跳帧：内容全没变 → 零像素（真实数据节奏下静止帧完全不闪） */
+    /* 跳帧：内容全没变 → 零像素（静止帧完全不闪） */
     if (snap.on &&
         snap.fill_w == fill_w && snap.charging == d->charging &&
         strcmp(snap.socstr, socstr) == 0 &&
-        strcmp(snap.rangestr, rangestr) == 0 &&
-        strcmp(snap.vstr[0], vstr[0]) == 0 &&
-        strcmp(snap.vstr[1], vstr[1]) == 0 &&
-        strcmp(snap.vstr[2], vstr[2]) == 0 &&
-        strcmp(snap.capstr, capstr) == 0)
+        strcmp(snap.rangestr, rangestr) == 0)
         return;
 
     /* 1) 状态胶囊：仅充放电翻转才动（形状恒定，圆角擦+画紧挨） */
@@ -222,34 +235,11 @@ void ui_raw_update(const ui_raw_data_t *d)
         slot_set(&slot_rng, rx, 130, (int16_t)tw, 18);
     }
 
-    /* 5) 三列数值槽（标签已在静态层，不动） */
-    for (i = 0; i < 3; i++) {
-        uint16_t tw = GFX_TextWidth(FN16(), FN16_N(), vstr[i]);
-        int16_t vx = (int16_t)(col_x[i] - 36 + (72 - tw) / 2);
-        uint16_t col = (i == 1) ? (d->charging ? CLR_CHG2 : CLR_DISCH2) : CLR_TEXT2;
-        slot_erase(&slot_col[i], vx, 162, (int16_t)tw, 19, CLR_BG2);
-        GFX_DrawText(vx, 162, FN16(), FN16_N(), FONT_RAW_BLOB, vstr[i], col);
-        slot_set(&slot_col[i], vx, 162, (int16_t)tw, 19);
-    }
-
-    /* 6) 容量值槽（前缀/后缀已在静态层固定，只有值动态；槽内居中） */
-    {
-        uint16_t tw = GFX_TextWidth(FN16(), FN16_N(), capstr);
-        int16_t cvx = (int16_t)(cap_vx + (CAPV_W - tw) / 2);
-        slot_erase(&slot_cap, cvx, 209, (int16_t)tw, 19, CLR_BG2);
-        GFX_DrawText(cvx, 209, FN16(), FN16_N(), FONT_RAW_BLOB, capstr, CLR_TEXT2);
-        slot_set(&slot_cap, cvx, 209, (int16_t)tw, 19);
-    }
-
     /* 保存本帧快照 */
     snap.fill_w = (int16_t)fill_w;
     snap.charging = d->charging;
     strcpy(snap.socstr, socstr);
     strcpy(snap.rangestr, rangestr);
-    strcpy(snap.vstr[0], vstr[0]);
-    strcpy(snap.vstr[1], vstr[1]);
-    strcpy(snap.vstr[2], vstr[2]);
-    strcpy(snap.capstr, capstr);
     snap.on = 1;
 }
 

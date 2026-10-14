@@ -117,9 +117,9 @@ d.soc = 76.0f; d.voltage = 84.52f; d.current = -12.3f;
 d.power_kw = 1.04f; d.capacity_ah = 19.6f; d.range_km = 50; d.charging = 0;
 
 ui_raw_init();              /* 上电一次，需先 ST7789_Init() */
-ui_raw_draw_static();       /* 上电一次：外壳/分隔线等静态层 */
+ui_raw_draw_static(&d);     /* 上电一次：框架 + 电压/电流/功率/容量静态值 */
 while (1) {
-    /* 25Hz：40ms 节拍 + 脏矩形增量刷新（无整屏清屏，不闪） */
+    /* 25Hz：40ms 节拍 + 跳帧/槽位刷新（无整屏清屏，不闪） */
     ui_raw_update(&d);
     HAL_Delay(40);
 }
