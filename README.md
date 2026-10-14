@@ -64,7 +64,7 @@ lv_color_t c = lv_color_hsv_to_rgb(soc * 12 / 10, 78, 86);
 │   ├── st7789.c/h            # ST7789驱动（SPI3 42.5MHz + DMA 16行块缓冲）
 │   ├── ui.h + ui_lvgl.c      # LVGL版接口/实现（存档，.cproject 里排除编译）
 ├── port/                 # G431 板级移植层
-│   ├── g431_port.h           # 屏尺寸宏（240×280，UI 顶部对齐 0..239）+ 转接声明
+│   ├── g431_port.h           # 屏尺寸宏（240×280 + G431_YOFF 居中）+ 转接声明
 │   ├── g431_st7789.c         # ST7789_SetWindow/PushPixels 转接（编译进固件）
 │   ├── g431_main_demo.c      # main.c USER CODE 粘贴参考（纯注释）
 │   ├── st7789_port.c         # 通用 SPI+DMA 移植模板（存档，排除编译）
@@ -73,8 +73,9 @@ lv_color_t c = lv_color_hsv_to_rgb(soc * 12 / 10, 78, 86);
 │   ├── raw_canvas.py         # 裸机V2渲染核心（复刻gfx_raw.c）
 │   ├── raw_draw.py           # 裸机V2整屏渲染（复刻ui_raw_draw.c）
 │   ├── render_raw_main.py    # 输出裸机预览 + LVGL并排对比
+│   ├── render_frame_seq.py   # 分层序列模拟（静态/首帧/SOC，复刻fmt_fx陷阱）
 │   └── render_verify.py      # LVGL绘图逻辑复刻 → PNG验证
-├── images/               # 各状态渲染图 + 对比图（README引用）
+├── images/               # 各状态渲染图 + 对比图（README引用，含 sim_step* 调试存档）
 ├── doc/                  # 屏幕/芯片手册 + ST7789_LCD_Guide.md
 └── README.md
 ```
@@ -128,6 +129,12 @@ while (1) {
 移植只改 `st7789_port.c` 引脚+`SPI`句柄，实现 `SetWindow/PushPixels/PushPixelsSolid` 即可。
 字库再生：`python3 ui/fontgen.py`（需 `NotoSansCJK + DejaVu`，`Ubuntu` 自带）。
 对比验证：`python3 tools/render_raw_main.py` → `images/compare_*.png`（左LVGL右裸机+diff率）。
+
+### 常见坑（MCU 上踩过的）
+
+- **newlib-nano 缺省禁用 `%f`**：`snprintf("%.2f")` 在目标板上输出**空串**（数字一片空白，`%d` 整数正常）。链接器需加 `-u _printf_float` 才支持浮点，否则一律走 `ui_raw_draw.c` 的 `fmt_fx()` 定点格式化（纯整数运算 + `%d`），**勿改回 `%.2f`**。
+- **240×280 面板行偏移**：GRAM 为 240×320，可见区起始行 = GRAM 40（工程 `st7789.h` 的 `ST7789_VRAM_OFFSET=40`）。`port/g431_port.h` 的 `G431_YOFF = 60`（40 起始行 + (280-240)/2=20 居中余量）让 UI 垂直居中、胶囊完整可见。换屏后若整体偏移不对，只调这一个宏（常见值 40/60）。
+- `tools/render_frame_seq.py` 可复现第 1 条：`images/sim_step4_float_fail.png` 就是 `%f` 失效模拟（三列数值+容量全空白，整数格式不受影响）。
 
 ## 渲染验证（render_verify.py）
 
