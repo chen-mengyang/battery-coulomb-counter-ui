@@ -21,6 +21,8 @@
  *   ui_raw_draw_static(&d);             // 框架 + 电压/电流/功率/容量静态值
  *   // 之后 ui_raw_update：内容没变整帧跳过（零像素）；变了只做元素级
  *   // 槽位擦+画（单元素空白 <1ms）→ 25Hz 无闪烁
+ *   // 注意：newlib-nano 缺省禁用 %f（输出空串），UI 数值一律走
+ *   // ui_raw_draw.c 的 fmt_fx 定点格式化，勿改回 snprintf("%.2f")。
  *
  * ---- USER CODE BEGIN 3 (while 1) ----
  *   // 25Hz 全屏刷新：40ms 节拍 + 屏底帧耗时/FPS 统计（DWT 计时、

@@ -88,6 +88,20 @@ static int FN16_N(void) { return (int)(sizeof(FONT_NUM16)/sizeof(FONT_NUM16[0]))
 static const raw_glyph_t *FN40(void) { return FONT_NUM40; }
 static int FN40_N(void) { return (int)(sizeof(FONT_NUM40)/sizeof(FONT_NUM40[0])); }
 
+/* float → 字符串（定点，四舍五入）。newlib-nano 缺省禁用 %f 浮点格式化
+ * （需链接器 -u _printf_float），snprintf("%.2f") 会输出空串 —— 这正是
+ * 电压/电流/功率/容量"不显示"的根因（整数 %d 正常，故 SOC/续航可见）。
+ * 此处用整数运算 + %d 规避，dec = 1 或 2；out 建议 >=8 字节。 */
+static void fmt_fx(char *out, int outsz, float v, int dec)
+{
+    int scale = (dec == 2) ? 100 : 10;
+    int neg = (v < 0.0f);
+    int n;
+    if (neg) v = -v;
+    n = (int)(v * (float)scale + 0.5f);
+    snprintf(out, outsz, "%s%d.%0*d", neg ? "-" : "", n / scale, dec, n % scale);
+}
+
 /* 三列静态数值：居中于 72px 格（y162），画一次不再刷新 */
 static void draw_col_value(int cx, const char *s, uint16_t col)
 {
@@ -122,17 +136,21 @@ void ui_raw_draw_static(const ui_raw_data_t *d)
     GFX_DrawText(x, 210, FCN(), FCN_N(), FONT_RAW_BLOB, CAP_PRE, CLR_CAP_TXT2);
     GFX_DrawText((int16_t)(x + w1 + 2 + CAPV_W + 2), 210, FCN(), FCN_N(),
                  FONT_RAW_BLOB, CAP_SUF, CLR_CAP_TXT2);
-    /* 静态数值（d 非空时）：电压/电流/功率三列 + 容量值槽 */
+    /* 静态数值（d 非空时）：电压/电流/功率三列 + 容量值槽。
+     * 用定点 fmt_fx —— newlib-nano 的 %f 输出空串（见 fmt_fx 注释）。 */
     if (d) {
-        char v0[12], v1[12], v2[12], cv[16];
+        char v0[12], v1[12], v2[12], cv[16], tmp[12];
         float a = d->current >= 0 ? d->current : -d->current;
-        snprintf(v0, sizeof(v0), "%.2f", d->voltage);
-        snprintf(v1, sizeof(v1), "%s%.1f", d->charging ? "+" : "-", a);
-        snprintf(v2, sizeof(v2), "%.2f", d->power_kw);
-        if (d->capacity_ah >= 0.0f)
-            snprintf(cv, sizeof(cv), "%.1fAh", d->capacity_ah);
-        else
+        fmt_fx(v0, sizeof(v0), d->voltage, 2);
+        fmt_fx(tmp, sizeof(tmp), a, 1);
+        snprintf(v1, sizeof(v1), "%s%s", d->charging ? "+" : "-", tmp);
+        fmt_fx(v2, sizeof(v2), d->power_kw, 2);
+        if (d->capacity_ah >= 0.0f) {
+            fmt_fx(tmp, sizeof(tmp), d->capacity_ah, 1);
+            snprintf(cv, sizeof(cv), "%sAh", tmp);
+        } else {
             snprintf(cv, sizeof(cv), "--");
+        }
         draw_col_value(60, v0, CLR_TEXT2);
         draw_col_value(120, v1, d->charging ? CLR_CHG2 : CLR_DISCH2);
         draw_col_value(180, v2, CLR_TEXT2);
@@ -252,11 +270,11 @@ void ui_raw_draw_stats(float frame_ms, float fps)
     uint16_t ok  = CLR_CHG2;    /* 绿：达标 */
     uint16_t bad = CLR_LOW2;    /* 红：未达标 */
     /* 量化：ms 取 1ms、fps 取 0.5 —— 稳态下字符串不变，状态带不动；
-     * 变了也只擦各自数字槽（不再整清 40 行） */
+     * 变了也只擦各自数字槽（不再整清 40 行）。定点输出（%f 为空串）。 */
     frame_ms = (float)((int)(frame_ms + 0.5f));
     fps = (float)((int)(fps * 2.0f + 0.5f)) / 2.0f;
-    snprintf(a, sizeof(a), "%.1f", frame_ms);
-    snprintf(b, sizeof(b), "%.1f", fps);
+    fmt_fx(a, sizeof(a), frame_ms, 1);
+    fmt_fx(b, sizeof(b), fps, 1);
     if (strcmp(a, lastA) != 0) {
         uint16_t tw = GFX_TextWidth(FONT_NUM16, n16, a);
         slot_erase(&slotA, 8, 249, (int16_t)tw, 19, CLR_BG2);
