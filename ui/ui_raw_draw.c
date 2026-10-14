@@ -261,35 +261,3 @@ void ui_raw_update(const ui_raw_data_t *d)
     snap.on = 1;
 }
 
-void ui_raw_draw_stats(float frame_ms, float fps)
-{
-    char a[16], b[16];
-    static const int n16 = (int)(sizeof(FONT_NUM16) / sizeof(FONT_NUM16[0]));
-    static char lastA[16], lastB[16];
-    static ui_slot_t slotA, slotB;
-    uint16_t ok  = CLR_CHG2;    /* 绿：达标 */
-    uint16_t bad = CLR_LOW2;    /* 红：未达标 */
-    /* 量化：ms 取 1ms、fps 取 0.5 —— 稳态下字符串不变，状态带不动；
-     * 变了也只擦各自数字槽（不再整清 40 行）。定点输出（%f 为空串）。 */
-    frame_ms = (float)((int)(frame_ms + 0.5f));
-    fps = (float)((int)(fps * 2.0f + 0.5f)) / 2.0f;
-    fmt_fx(a, sizeof(a), frame_ms, 1);
-    fmt_fx(b, sizeof(b), fps, 1);
-    if (strcmp(a, lastA) != 0) {
-        uint16_t tw = GFX_TextWidth(FONT_NUM16, n16, a);
-        slot_erase(&slotA, 8, 249, (int16_t)tw, 19, CLR_BG2);
-        GFX_DrawText(8, 249, FONT_NUM16, n16, FONT_RAW_BLOB, a,
-                     (frame_ms <= 40.0f) ? ok : bad);
-        slot_set(&slotA, 8, 249, (int16_t)tw, 19);
-        strcpy(lastA, a);
-    }
-    if (strcmp(b, lastB) != 0) {
-        uint16_t tw = GFX_TextWidth(FONT_NUM16, n16, b);
-        int16_t bx = (int16_t)(232 - tw);
-        slot_erase(&slotB, bx, 249, (int16_t)tw, 19, CLR_BG2);
-        GFX_DrawText(bx, 249, FONT_NUM16, n16, FONT_RAW_BLOB, b,
-                     (fps >= 25.0f) ? ok : bad);
-        slot_set(&slotB, bx, 249, (int16_t)tw, 19);
-        strcpy(lastB, b);
-    }
-}

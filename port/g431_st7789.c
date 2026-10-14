@@ -7,7 +7,7 @@
  *
  * 说明：
  *  - 自带 CS/DC 操作（main.h 引脚宏是公开的），不依赖 st7789.c 内部静态函数。
- *  - y 直接透传“屏坐标”（本地屏可见 240x280；UI 只用 0..239）。
+ *  - y 经 G431_YOFF 平移（面板 240x280 垂直居中，GRAM 起始行 40）。
  *  - RGB565 字节序：ST7789 串行要求 MSB 先行，与 GFX_RGB565 一致。
  *  - ST7789_Init 不在这里实现：复用工程 st7789_init()（SWRESET、无 RST 脚）。
  *  - 发送走直写 SPI 寄存器 sp_write + 批量块推（25Hz 全屏刷新的关键）。
@@ -54,7 +54,8 @@ void ST7789_SetWindow(int16_t x, int16_t y, int16_t w, int16_t h)
 {
     uint8_t b[4];
     uint16_t x1 = (uint16_t)(x + w - 1);
-    uint16_t y1 = (uint16_t)(y + h - 1);
+    uint16_t y1 = (uint16_t)(y + h - 1 + G431_YOFF);   /* 屏幕坐标 → GRAM */
+    y = (int16_t)(y + G431_YOFF);
     p_wr_cmd(0x2A);
     b[0] = (uint8_t)((uint16_t)x >> 8); b[1] = (uint8_t)x;
     b[2] = (uint8_t)(x1 >> 8);          b[3] = (uint8_t)x1;

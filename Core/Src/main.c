@@ -123,26 +123,17 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  /* Coulomb-counter UI demo @ 25Hz:
+  /* Coulomb-counter UI demo @ 25Hz (240x280 panel, UI vertically centered
+   * via G431_YOFF in port/g431_port.h):
    * - static values: voltage / current / power / capacity are drawn ONCE by
-   *   ui_raw_draw_static(&d) from the current variable values (per request);
+   *   ui_raw_draw_static(&d) from the current variable values;
    * - dynamic loop: soc 0->100% sawtooth (8s/round) with linked range =
-   *   soc*0.7 km; charge/discharge pill fixed to "discharge" (current static);
-   * - frame skip + element-level slots keep the refresh flicker-free;
-   * - DWT frame timing on the bottom 40-row status band (y=240..279):
-   *   left = frame time in ms, right = measured FPS (green = on target). */
+   *   soc*0.7 km; charge/discharge pill fixed to "discharge";
+   * - frame skip + element-level slots keep the refresh flicker-free. */
   {
     ui_raw_data_t d = { 0 };
-    static uint32_t nextFrame, fpsWin;
-    static uint32_t fpsCnt = 0;
-    float msShow = 0.0f, fpsShow = 0.0f;
-    uint32_t cyc0;
+    static uint32_t nextFrame;
     float soc_f = 0.0f;
-
-    /* DWT cycle counter: ms = cycles / 170000 (SYSCLK = 170MHz). */
-    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-    DWT->CYCCNT = 0;
-    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
     /* Static values for the one-shot layer draw. */
     d.voltage = 72.5f;
@@ -151,13 +142,11 @@ int main(void)
     d.capacity_ah = 19.6f;
     d.charging = 0;
 
-    /* Static layer once: bg clear (incl. bottom band) + shell + labels
-     * + static values above. Afterwards ui_raw_update only refreshes
-     * SOC/range - no per-frame full-screen clear->redraw (that flickered). */
+    /* Static layer once: bg clear + shell + labels + static values.
+     * Afterwards ui_raw_update only refreshes SOC/range (no flicker). */
     ui_raw_init();                 /* clears the 240x240 UI area */
-    GFX_FillRect(0, 240, 240, 40, GFX_RGB565(0x0B, 0x0E, 0x13));
     ui_raw_draw_static(&d);        /* frame + one-shot static values */
-    nextFrame = fpsWin = HAL_GetTick();
+    nextFrame = HAL_GetTick();
 
     while (1)
     {
@@ -174,20 +163,7 @@ int main(void)
       d.soc = soc_f;
       d.range_km = (int)(soc_f * 0.7f + 0.5f);    /* 0..70 km */
 
-      cyc0 = DWT->CYCCNT;
       ui_raw_update(&d);
-
-      /* Measured FPS: frames actually finished within a 1s window. */
-      fpsCnt++;
-      if ((int32_t)(now - fpsWin) >= 1000) {
-        fpsShow = (float)fpsCnt * 1000.0f / (float)(now - fpsWin);
-        fpsCnt = 0;
-        fpsWin = now;
-      }
-
-      /* Status band shows the previous frame's numbers (green = on target). */
-      ui_raw_draw_stats(msShow, fpsShow);
-      msShow = (float)(DWT->CYCCNT - cyc0) / 170000.0f;
     }
   }
   }

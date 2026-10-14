@@ -29,9 +29,6 @@ void ui_raw_init(void);
  * 之后 ui_raw_update 只刷新 SOC/续航/充放电（跳帧+元素槽位，无闪烁） */
 void ui_raw_draw_static(const ui_raw_data_t *d);
 void ui_raw_update(const ui_raw_data_t *d);
-/* 屏底 40 行状态带（y=240..279）：左=上一帧耗时 ms，右=实测 FPS；
- * 绿=帧耗时 <=40ms 且 fps >=25（25Hz 达标），红=未达标。 */
-void ui_raw_draw_stats(float frame_ms, float fps);
 
 #ifdef __cplusplus
 }

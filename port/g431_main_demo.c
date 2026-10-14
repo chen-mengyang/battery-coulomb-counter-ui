@@ -16,17 +16,16 @@
  *   st7789_init();                      // SWRESET 初始化 + 黑屏
  *   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);  // LED 常亮
  *   ui_raw_init();                      // 清 240x240 背景
- *   // 底部 40 行是状态带（帧耗时/FPS）
- *   GFX_FillRect(0, 240, 240, 40, GFX_RGB565(0x0B,0x0E,0x13));
  *   ui_raw_draw_static(&d);             // 框架 + 电压/电流/功率/容量静态值
  *   // 之后 ui_raw_update：内容没变整帧跳过（零像素）；变了只做元素级
  *   // 槽位擦+画（单元素空白 <1ms）→ 25Hz 无闪烁
  *   // 注意：newlib-nano 缺省禁用 %f（输出空串），UI 数值一律走
  *   // ui_raw_draw.c 的 fmt_fx 定点格式化，勿改回 snprintf("%.2f")。
+ *   // 240x280 面板：port 层 G431_YOFF=60 让 UI 垂直居中，无需额外处理。
  *
  * ---- USER CODE BEGIN 3 (while 1) ----
- *   // 25Hz 全屏刷新：40ms 节拍 + 屏底帧耗时/FPS 统计（DWT 计时、
- *   // tick 对齐、ui_raw_draw_stats）完整实现直接抄本仓
+ *   // 25Hz 节拍：40ms 一个 tick（跳过丢帧/重对齐），循环体调
+ *   // ui_raw_update(&d) 即可；完整实现直接抄本仓
  *   // Core/Src/main.c 的 USER CODE 3。最简版本：
  *   {
  *     static int t = 0;
